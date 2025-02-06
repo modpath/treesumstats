@@ -12,7 +12,7 @@ CHAIN_PERCENTILES = [p for p in range(10, 91, 10) if 50 != p]
 
 
 class TransmissionChainFeatureCalculator(FeatureCalculator):
-    """Computes tree event time-related summary statistics."""
+    """Computes tree transmission chain-related summary statistics."""
 
     def __init__(self, chain_len=CHAIN_LEN, percentiles=CHAIN_PERCENTILES):
         self._n_inodes = None
