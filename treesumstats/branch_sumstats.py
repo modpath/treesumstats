@@ -18,8 +18,7 @@ class BranchFeatureCalculator(FeatureCalculator):
         self._edists = None
         self._forest = None
 
-    @classmethod
-    def feature_names(cls):
+    def feature_names(self):
         return [f'{BRLEN}_inode_{flavour}' for flavour in [MEAN, MED, VAR]] \
             + [f'{BRLEN}_tip_{flavour}' for flavour in [MEAN, MED, VAR]] \
             + [f'{BRLEN}_inode_top_{flavour}' for flavour in [MEAN, MED, VAR]] \
@@ -161,8 +160,7 @@ class BranchFeatureCalculator(FeatureCalculator):
             return val1 / max(val2, EPSILON)
         return None
 
-    @classmethod
-    def help(cls, feature_name, *args, **kwargs):
+    def help(self, feature_name, *args, **kwargs):
         if feature_name.startswith(BRLEN):
             is_internal = 'inode' in feature_name
             flavour = feature_name.split('_')[-1]
@@ -177,6 +175,6 @@ class BranchFeatureCalculator(FeatureCalculator):
             return res
         if feature_name.startswith('frac'):
             feature_name_1, feature_name_2 = feature_name[len('frac_'):].split('_by_')
-            return f'fraction of two values. The dividend is {BranchFeatureCalculator.help(feature_name_1).split('.')[0]}. '\
-                   f'The divisor is {BranchFeatureCalculator.help(feature_name_1)}'
+            return f'fraction of two values. The dividend is {self.help(feature_name_1).split('.')[0]}. '\
+                   f'The divisor is {self.help(feature_name_1)}'
         return None

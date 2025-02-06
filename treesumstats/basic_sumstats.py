@@ -7,8 +7,7 @@ class BasicFeatureCalculator(FeatureCalculator):
     def __init__(self):
         self._forest = None
 
-    @classmethod
-    def feature_names(cls):
+    def feature_names(self):
         return ['n_trees', 'n_tips', 'n_inodes', 'len_forest']
 
     def set_forest(self, forest, **kwargs):
@@ -25,8 +24,7 @@ class BasicFeatureCalculator(FeatureCalculator):
             return sum(_.dist for tree in self._forest for _ in tree.traverse())
         return None
 
-    @classmethod
-    def help(cls, feature_name, *args, **kwargs):
+    def help(self, feature_name, *args, **kwargs):
         if 'n_trees' == feature_name:
             return 'number of trees in the forest.'
         if 'n_tips' == feature_name:

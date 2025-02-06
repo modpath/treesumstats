@@ -4,6 +4,7 @@ from treesumstats.event_time_sumstats import EventTimeFeatureCalculator
 from treesumstats.topology_sumstats import TopologyFeatureCalculator
 from treesumstats import FeatureRegistry, FeatureManager
 from treesumstats.resolution_sumstats import ResolutionFeatureCalculator
+from treesumstats.transmission_chain_sumstats import TransmissionChainFeatureCalculator
 from treesumstats.tree_manager import read_forest
 
 FeatureRegistry.register(ResolutionFeatureCalculator())
@@ -11,6 +12,7 @@ FeatureRegistry.register(TopologyFeatureCalculator())
 FeatureRegistry.register(EventTimeFeatureCalculator())
 FeatureRegistry.register(BasicFeatureCalculator())
 FeatureRegistry.register(BranchFeatureCalculator())
+FeatureRegistry.register(TransmissionChainFeatureCalculator())
 
 
 

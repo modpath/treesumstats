@@ -68,8 +68,7 @@ class TopologyFeatureCalculator(FeatureCalculator):
         self._avg_imbalance = None
         self._n_imbalanced = None
 
-    @classmethod
-    def help(cls, feature_name, *args, **kwargs):
+    def help(self, feature_name, *args, **kwargs):
         if 'tips_in_' in feature_name:
             conf = feature_name[feature_name.find('tips_in_') + len('tips_in_'):]
             measure = 'fraction' if feature_name.startswith('frac') else 'number'
@@ -133,8 +132,7 @@ class TopologyFeatureCalculator(FeatureCalculator):
             return 'mean ratio of min-to-max subtree sizes over all internal nodes [Colijn et al. 2014].'
         return None
 
-    @classmethod
-    def feature_names(cls):
+    def feature_names(self):
         return [f'frac_tips_in_{conf}' for conf in TOPOLOGY_LABELS] \
             + [f'n_tips_in_{conf}' for conf in TOPOLOGY_LABELS] \
             + [COLLESS, f'{COLLESS}_{NORMALIZED}'] \

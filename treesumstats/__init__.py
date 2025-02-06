@@ -37,9 +37,8 @@ NORMALIZED = 'normalized'
 class FeatureCalculator(ABC):
     """Abstract base class for feature calculators."""
 
-    @classmethod
     @abstractmethod
-    def feature_names(cls):
+    def feature_names(self):
         """Return a list of feature names this class can compute."""
         pass
 
@@ -53,9 +52,8 @@ class FeatureCalculator(ABC):
         """Compute a specific feature or features."""
         pass
 
-    @classmethod
     @abstractmethod
-    def help(cls, feature_name, *args, **kwargs):
+    def help(self, feature_name, *args, **kwargs):
         """Shows the definition of the specific feature."""
         pass
 

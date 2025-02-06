@@ -1,9 +1,8 @@
-from unicodedata import is_normalized
-
 import numpy as np
 
-from treesumstats.tree_manager import annotate_forest_with_time, TIME
 from treesumstats import BASIC_METRIC2HELP, BASIC_ARRAY_METRICS, BASIC_METRIC2FUN, FeatureCalculator, NORMALIZED
+from treesumstats.tree_manager import annotate_forest_with_time, TIME
+
 
 class EventTimeFeatureCalculator(FeatureCalculator):
     """Computes tree event time-related summary statistics."""
@@ -14,8 +13,7 @@ class EventTimeFeatureCalculator(FeatureCalculator):
         self._forest = None
         self._inode_times = None
 
-    @classmethod
-    def feature_names(cls):
+    def feature_names(self):
         return [f'{TIME}_tip_{flavour}' for flavour in BASIC_ARRAY_METRICS] \
             +  [f'{TIME}_inode_{flavour}' for flavour in BASIC_ARRAY_METRICS] \
             +  [f'{TIME}_tip_{NORMALIZED}_{flavour}' for flavour in BASIC_ARRAY_METRICS] \
@@ -57,8 +55,7 @@ class EventTimeFeatureCalculator(FeatureCalculator):
 
         return None
 
-    @classmethod
-    def help(cls, feature_name, *args, **kwargs):
+    def help(self, feature_name, *args, **kwargs):
         if feature_name.startswith(TIME):
             is_internal = 'inode' in feature_name
             node = 'inode' if is_internal else 'tip'

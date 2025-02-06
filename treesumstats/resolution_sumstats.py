@@ -23,8 +23,7 @@ class ResolutionFeatureCalculator(FeatureCalculator):
         self._forest = None
         self._n_children = None
 
-    @classmethod
-    def feature_names(cls):
+    def feature_names(self):
         return ([f'{N_CHILDREN_PREFIX}_{flavour}' for flavour in BASIC_ARRAY_METRICS] +
                 [N_RESOLVED, N_RESOLVED_NON_ZERO, FRACTION_RESOLVED, FRACTION_RESOLVED_NON_ZERO])
 
@@ -80,8 +79,7 @@ class ResolutionFeatureCalculator(FeatureCalculator):
             return self.n_resolved_nz
         return self.n_resolved_nz / self.n_resolved_binary
 
-    @classmethod
-    def help(cls, feature_name, *args, **kwargs):
+    def help(self, feature_name, *args, **kwargs):
         if feature_name.startswith(N_CHILDREN_PREFIX):
             return (f'{BASIC_METRIC2HELP[feature_name[len(N_CHILDREN_PREFIX) + 1:]]} '
                     f'of the number of children per internal node of forest trees.')
