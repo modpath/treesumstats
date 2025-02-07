@@ -44,7 +44,7 @@ def get_ltt_plot(forest):
         cur_lineages += delta_lineages
         cur_trees += delta_trees
         # if there is no collision in times of two events, increase the array
-        if not times or times[-1] < time:
+        if not times or np.abs(time - times[-1]) > EPSILON:
             times.append(time)
             lineages.append(cur_lineages)
             trees.append(cur_trees)
@@ -140,7 +140,9 @@ class LTTFeatureCalculator(FeatureCalculator):
             + ['lineages_max'] + [f'lineages_max_{part}' for part in TREE_PARTS] \
             + [f'lineages_max_{NORMALIZED}'] + [f'lineages_max_{part}_{NORMALIZED}' for part in TREE_PARTS] \
             + ['lineage_start_to_max_slope', 'lineage_stop_to_max_slope', 'lineage_slope_ratio'] \
-            + [f'lineage_start_to_max_slope_{NORMALIZED}', f'lineage_stop_to_max_slope_{NORMALIZED}']
+            + [f'{f}_{part}' for part in TREE_PARTS for f in ['lineage_start_to_max_slope', 'lineage_stop_to_max_slope', 'lineage_slope_ratio']] \
+            + [f'lineage_start_to_max_slope_{NORMALIZED}', f'lineage_stop_to_max_slope_{NORMALIZED}'] \
+            + [f'{f}_{part}_{NORMALIZED}' for part in TREE_PARTS for f in ['lineage_start_to_max_slope', 'lineage_stop_to_max_slope']]
 
     def set_forest(self, forest, **kwargs):
         self._forest = forest
@@ -239,8 +241,8 @@ class LTTFeatureCalculator(FeatureCalculator):
                 return self.ltt_coord.lineages[coordinate] / denominator
             return None
 
-        part = 'top' if 'top' in feature_name \
-            else ('middle' if 'middle' in feature_name else ('bottom' if 'bottom' in feature_name else ''))
+        part = 'top' if '_top' in feature_name \
+            else ('middle' if '_middle' in feature_name else ('bottom' if '_bottom' in feature_name else ''))
         if part:
             feature_name = feature_name.replace(f'_{part}', '')
         ltt = self.ltt_top if 'top' == part \
@@ -303,8 +305,8 @@ class LTTFeatureCalculator(FeatureCalculator):
                        f'{explanation}'
             return None
 
-        part = 'top' if 'top' in feature_name \
-            else ('middle' if 'middle' in feature_name else ('bottom' if 'bottom' in feature_name else ''))
+        part = 'top' if '_top' in feature_name \
+            else ('middle' if '_middle' in feature_name else ('bottom' if '_bottom' in feature_name else ''))
         explanation = ''
         if part:
             feature_name = feature_name.replace(f'_{part}', '')
