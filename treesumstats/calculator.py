@@ -2,6 +2,7 @@ from treesumstats.basic_sumstats import BasicFeatureCalculator
 from treesumstats.branch_sumstats import BranchFeatureCalculator
 from treesumstats.event_time_sumstats import EventTimeFeatureCalculator
 from treesumstats.ltt_sumstats import LTTFeatureCalculator
+from treesumstats.subtree_sumstats import SubtreeFeatureCalculator
 from treesumstats.topology_sumstats import TopologyFeatureCalculator
 from treesumstats import FeatureRegistry, FeatureManager
 from treesumstats.resolution_sumstats import ResolutionFeatureCalculator
@@ -15,6 +16,7 @@ FeatureRegistry.register(BasicFeatureCalculator())
 FeatureRegistry.register(BranchFeatureCalculator())
 FeatureRegistry.register(TransmissionChainFeatureCalculator())
 FeatureRegistry.register(LTTFeatureCalculator())
+FeatureRegistry.register(SubtreeFeatureCalculator())
 
 
 

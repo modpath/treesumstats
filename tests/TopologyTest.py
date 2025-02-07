@@ -4,7 +4,7 @@ from ete3 import Tree
 
 from treesumstats.topology_sumstats import WIDTH_DEPTH_RATIO, WIDTH_DELTA, IMBALANCE_AVG
 from treesumstats import FeatureManager, FeatureRegistry, NORMALIZED
-from treesumstats.topology_sumstats import TopologyFeatureCalculator, TOPOLOGY_LABELS, COLLESS, SACKIN, WIDTH_MAX, \
+from treesumstats.topology_sumstats import TopologyFeatureCalculator, COLLESS, SACKIN, WIDTH_MAX, \
     DEPTH_MAX
 
 NWK_CONF = '(((A1:1, A2:1, A3:1)A:1, (B:1, (C:1, (D1:1, D2:1)D:1)CD:1)BD:1)AD:1,' \
@@ -17,28 +17,6 @@ FeatureRegistry.register(TopologyFeatureCalculator())
 
 
 class TopologyTest(unittest.TestCase):
-
-
-    def test_configs(self):
-        tree = Tree(NWK_CONF, format=3)
-
-
-
-        features = [f'n_tips_in_{conf}' for conf in TOPOLOGY_LABELS]
-        for feature_name, value, real_value in zip(features,
-                                                   FeatureManager.compute_features([tree], *features),
-                                                   [5 * 2, 2 * 3, 2 * 3, 1 * 4, 1 * 4, 1 * 4, 2 * 4, 1 * 4, 1 * 1]):
-            self.assertEqual(real_value, value, msg=f'Wrong {feature_name} value')
-
-        features = [f'frac_tips_in_{conf}' for conf in TOPOLOGY_LABELS]
-        for feature_name, value, real_value in zip(features,
-                                                   FeatureManager.compute_features([tree], *features),
-                                                   [5 * 2 / 28,
-                                                    2 * 3 / 28, 2 * 3 / 28,
-                                                    1 * 4 / 28, 1 * 4 / 28, 1 * 4 / 28, 2 * 4 / 28, 1 * 4 / 28,
-                                                    1 * 1 / 28]):
-            self.assertAlmostEqual(real_value, value, places=6, msg=f'Wrong {feature_name} value')
-
 
     def test_balance_stats(self):
         tree = Tree(NWK, format=3)
