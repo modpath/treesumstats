@@ -61,8 +61,8 @@ class EventTimeFeatureCalculator(FeatureCalculator):
             node = 'internal node' if is_internal else 'tip'
             is_normalized = NORMALIZED in feature_name
             flavour = feature_name.split('_')[-1]
-            res = f'{BASIC_METRIC2HELP[flavour]} of the sampling times of forest {node}s.'
+            res = f'{BASIC_METRIC2HELP[flavour]} of the times of forest {node}s.'
             if is_normalized:
-                res += ' We normalize the sampling times by dividing them by the last tip\'s sampling time.'
+                res += ' We normalize the times by dividing them by the last tip\'s time.'
             return res
         return None
