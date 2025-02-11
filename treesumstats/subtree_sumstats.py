@@ -172,7 +172,7 @@ class SubtreeFeatureCalculator(FeatureCalculator):
             if flavour in BASIC_METRIC2FUN or 'perc' in flavour:
                 res = f'{BASIC_METRIC2HELP[flavour]}' if flavour in BASIC_METRIC2FUN \
                     else f'{re.findall(r'\d+', flavour)[0]}th percentile'
-                res += f'of average tip sampling times among all {'' if is_real else 'reshuffled'}' \
+                res += f' of average of all tip pair sampling time differences in a {TOPOLOGY_LABEL2NAME[conf]} among all {'' if is_real else 'reshuffled'}' \
                        f'{TOPOLOGY_LABEL2NAME[conf]} subtrees in the forest.'
                 if not is_real:
                     res += reshuffling_expl

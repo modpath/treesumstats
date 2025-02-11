@@ -1,3 +1,5 @@
+from pandas.core.computation.ops import isnumeric
+
 from treesumstats.basic_sumstats import BasicFeatureCalculator
 from treesumstats.branch_sumstats import BranchFeatureCalculator
 from treesumstats.event_time_sumstats import EventTimeFeatureCalculator
@@ -27,15 +29,33 @@ def main():
     """
     import argparse
 
-    parser = argparse.ArgumentParser(description="Encode trees with summary statistics.")
-    parser.add_argument('--nwk', type=str, default='/home/azhukova/projects/bdpn/simulations_dl/test/BDCT0/forest.1.nwk', help="input tree/forest files in newick format")
+    parser = argparse.ArgumentParser(description="Calculate summary statistics for an input tree/forest.")
+    parser.add_argument('--nwk', type=str, default='/home/azhukova/projects/treesumstats/forest.0.nwk', help="input tree/forest files in newick format")
+    parser.add_argument('--tab', type=str, default='/home/azhukova/projects/treesumstats/forest.0.tab', help="output summary statistic table, in tab-delimited format: the first column will contain summary statistic name, and the second its value.")
+    parser.add_argument('--statistics', type=str, nargs='*', help='an optional list of summary statistics that should be calculated. If not given all the available statistics will be calculated.')
+    parser.add_argument('--add_definitions', action='store_true', help='whether to add a column "description" with the description of each calculated statistic.')
     params = parser.parse_args()
 
     forest = read_forest(params.nwk)
 
+    features = params.statistics if params.statistics else FeatureManager.available_features()
 
-    for feature_name, value in zip(FeatureManager.available_features(), FeatureManager.compute_features(forest)):
-        print(f'{feature_name}\t{value}\t({FeatureManager.help(feature_name)})')
+    def format_value(value):
+        try:
+            value = float(value)
+            if int(value) == value:
+                return f'{value:.0f}'
+            if value > 1e-6:
+                return f'{value:.6f}'
+            return f'{value:.g}'
+        except:
+            return value
+
+
+    with open(params.tab, 'w+') as f:
+        f.write(f'statistic\tvalue{'\tdescription' if params.add_definitions else ''}\n')
+        for feature_name, value in zip(features, FeatureManager.compute_features(forest)):
+            f.write(f'{feature_name}\t{format_value(value)}{f"\t{FeatureManager.help(feature_name)}" if params.add_definitions else ""}\n')
 
 
 if '__main__' == __name__:

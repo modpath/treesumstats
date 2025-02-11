@@ -27,7 +27,7 @@ setup(
     install_requires=['ete3', 'numpy==2.0.2', "scipy==1.14.1", 'biopython', 'pandas==2.2.3'],
     entry_points={
             'console_scripts': [
-                'treesumstats_encode = treesumstats.encoder:main',
+                'treesumstats_encode = treesumstats.calculator:main',
             ]
     },
 )
