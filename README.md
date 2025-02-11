@@ -51,27 +51,12 @@ If you installed __treesumstats__ in a conda environment (here named _phyloenv_)
 conda activate phyloenv
 ```
 
-[//]: # (Run the following commands to check for the presence of partner notification and estimate BD-PN model parameters.)
+Run the following command to calculate the summary statistics for an input tree _tree.nwk_ and save them to an output tab-delimited file _stats.tab_. 
+(The non-mandatory option _--add_descriptions_ would add a column with statistics descriptions to the output table.)
 
-[//]: # (The first command applies the PN test to a tree Zurich.nwk and saves the PN-test value to the file cherry_test.txt)
-
-[//]: # (The second command estimated the BD-PN parameters and their 95% CIs for this tree, assuming the sampling probability of 0.25, )
-
-[//]: # (and saves the estimated parameters to a comma-separated file estimates_bdpn.csv.)
-
-[//]: # (The third command estimated the classical BD parameters and their 95% CIs for this tree, assuming the sampling probability of 0.25, )
-
-[//]: # (and saves the estimated parameters to a comma-separated file estimates_bd.csv.)
-
-[//]: # (```bash)
-
-[//]: # (pn_test --nwk Zurich.nwk --log cherry_test.txt)
-
-[//]: # (bdpn_infer --nwk Zurich.nwk --ci --p 0.25 --log estimates_bdpn.csv)
-
-[//]: # (bd_infer --nwk Zurich.nwk --ci --p 0.25 --log estimates_bd.csv)
-
-[//]: # (```)
+```bash
+treesumstats_encode --nwk tree.nwk --tab stats.tab --add_descriptions
+```
 
 #### Help
 
@@ -86,18 +71,18 @@ treesumstats_encode --help
 #### Basic usage
 Once [docker](https://www.docker.com/community-edition) is installed, 
 
-[//]: # (run the following command to estimate BD-PN model parameters:)
+run the following command to calculate the summary statistics for an input tree _tree.nwk_ and save them to an output tab-delimited file _stats.tab_. 
+(The non-mandatory option _--add_descriptions_ would add a column with statistics descriptions to the output table.)
 
-[//]: # (```bash)
 
-[//]: # (docker run -v <path_to_the_folder_containing_the_tree>:/data:rw -t evolbioinfo/bdpn --nwk /data/Zurich.nwk --ci --p 0.25 --log /data/estimates.csv)
+```bash
+docker run -v <path_to_the_folder_containing_the_tree>:/data:rw -t evolbioinfo/treesumstats --nwk /data/tree.nwk --tab /data/stats.tab --add_descriptions
+```
 
-[//]: # (```)
 
-[//]: # ()
-[//]: # (This will produce a comma-separated file estimates.csv in the <path_to_the_folder_containing_the_tree> folder,)
+This will produce a tab-delimited file _stats.tab_ in the <path_to_the_folder_containing_the_tree> folder,
 
-[//]: # ( containing the estimated parameter values and their 95% CIs &#40;can be viewed with a text editor, Excel or Libre Office Calc&#41;.)
+ containing the summary statistic names in the _statistic_ column, their values in the _value_ column and their descriptions in the _description_ column. 
 
 #### Help
 
@@ -113,18 +98,18 @@ docker run -t evolbioinfo/treesumstats -h
 #### Basic usage
 Once [apptainer](https://apptainer.org/docs/user/latest/quick_start.html#installation) is installed, 
 
-[//]: # (run the following command to estimate BD-PN model parameters &#40;from the folder where the Zurich.nwk tree is contained&#41;:)
+run the following command to calculate the summary statistics for an input tree _tree.nwk_ and save them to an output tab-delimited file _stats.tab_. 
+(The non-mandatory option _--add_descriptions_ would add a column with statistics descriptions to the output table.)
 
-[//]: # ()
-[//]: # (```bash)
 
-[//]: # (apptainer run docker://evolbioinfo/bdpn --nwk Zurich.nwk --ci --p 0.25 --log estimates.csv)
+```bash
+apptainer run docker://evolbioinfo/treesumstats --nwk tree.nwk --tab stats.tab --add_descriptions
+```
 
-[//]: # (```)
-[//]: # ()
-[//]: # (This will produce a comma-separated file estimates.csv,)
 
-[//]: # ( containing the estimated parameter values and their 95% CIs &#40;can be viewed with a text editor, Excel or Libre Office Calc&#41;.)
+This will produce a tab-delimited file _stats.tab_,
+
+ containing the summary statistic names in the _statistic_ column, their values in the _value_ column and their descriptions in the _description_ column. 
 
 
 #### Help

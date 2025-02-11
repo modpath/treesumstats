@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--nwk', type=str, required=True, help="input tree/forest files in newick format")
     parser.add_argument('--tab', type=str, required=True, help="output summary statistic table, in tab-delimited format: the first column will contain summary statistic name, and the second its value.")
     parser.add_argument('--statistics', type=str, nargs='*', help='an optional list of summary statistics that should be calculated. If not given all the available statistics will be calculated.')
-    parser.add_argument('--add_definitions', action='store_true', help='whether to add a column "description" with the description of each calculated statistic.')
+    parser.add_argument('--add_descriptions', action='store_true', help='whether to add a column "description" with the description of each calculated statistic.')
     params = parser.parse_args()
 
     forest = read_forest(params.nwk)
