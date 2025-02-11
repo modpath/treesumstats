@@ -35,8 +35,8 @@ TOPOLOGY_LABEL2KEY = {'2': CHERRY, '3U': TRIPLET_UNRESOLVED, '3L': TRIPLET_LADDE
                       '4L': QUARTET_LADDER, '4B': QUARTET_BALANCED, 'O': 1}
 
 TOPOLOGY_LABEL2N = {'2': 2, '3U': 3, '3L': 3, '4U': 4,
-                      '4U3U1': 4, '4U211': 4,
-                      '4L': 4, '4B': 4, 'O': 1}
+                    '4U3U1': 4, '4U211': 4,
+                    '4L': 4, '4B': 4, 'O': 1}
 
 TOPOLOGY_LABEL2NAME = {'2': 'cherries', '3U': 'unresolved triplets', '3L': 'resolved triplets',
                        '4U': 'fully unresolved quartets',
@@ -125,6 +125,17 @@ def get_reshuffled_configs(real_configs, all_tips_sorted):
     return reshuffled_confs
 
 
+def get_avg_time_diff(times):
+    n = len(times)
+    diff_sum = 0
+    for i in range(n - 1):
+        time_i = times[i]
+        for j in range(i + 1, n):
+            diff_sum += np.abs(time_i - times[j])
+    return 2 * diff_sum / n / (n - 1)
+
+
+
 
 class SubtreeFeatureCalculator(FeatureCalculator):
     """Computes tree topology-related summary statistics."""
@@ -187,7 +198,7 @@ class SubtreeFeatureCalculator(FeatureCalculator):
         return [f'frac_tips_in_{conf}' for conf in TOPOLOGY_LABELS] \
             + [f'n_tips_in_{conf}' for conf in TOPOLOGY_LABELS] \
             + [f'time_diff_in_{conf}_{type}_{flavour}' for type in ('real', 'random') for flavour in BASIC_ARRAY_METRICS for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL] \
-            + [f'time_diff_in_{conf}_{type}_perc{p}' for type in ('real', 'random') for p in TIP_TIME_PERCENTILES for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL]\
+            + [f'time_diff_in_{conf}_{type}_perc{p}' for type in ('real', 'random') for p in TIP_TIME_PERCENTILES for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL] \
             + [f'time_diff_in_{conf}_random_vs_real_{metric}_less' for metric in ('n', 'frac', 'pval') for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL]
 
     def set_forest(self, forest, **kwargs):
@@ -225,15 +236,15 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                 self._topo2diffs = {}
             if config_type not in self._topo2diffs:
                 confs_real = self.conf2tips(config_type, is_real=True)
-                self._topo2diffs[config_type] = np.array([np.mean([getattr(_, TIME) for _ in c]) for c in confs_real])
+                self._topo2diffs[config_type] = np.array([get_avg_time_diff([getattr(_, TIME) for _ in c]) for c in confs_real])
             return self._topo2diffs[config_type]
         if self._topo2diffs_random is None:
             self._topo2diffs_random = {}
         if config_type not in self._topo2diffs_random:
             confs_real = self.conf2tips(config_type, is_real=True)
             confs_random = self.conf2tips(config_type, is_real=False)
-            self._topo2diffs_random[config_type] = np.array([np.mean([getattr(t, TIME) - t.dist + tr.dist
-                                                                      for t, tr in zip(c, cr)])
+            self._topo2diffs_random[config_type] = np.array([get_avg_time_diff([getattr(t, TIME) - t.dist + tr.dist
+                                                                                for t, tr in zip(c, cr)])
                                                              for c, cr in zip(confs_real, confs_random)])
         return self._topo2diffs_random[config_type]
 
