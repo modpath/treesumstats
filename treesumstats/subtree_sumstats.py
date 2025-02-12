@@ -173,22 +173,22 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                 res = f'{BASIC_METRIC2HELP[flavour]}' if flavour in BASIC_METRIC2FUN \
                     else f'{re.findall(r'\d+', flavour)[0]}th percentile'
                 res += f' of average of all tip pair sampling time differences in a {TOPOLOGY_LABEL2NAME[conf]} among all {'' if is_real else 'reshuffled'}' \
-                       f'{TOPOLOGY_LABEL2NAME[conf]} subtrees in the forest.'
+                       f'{TOPOLOGY_LABEL2NAME[conf]} in the forest.'
                 if not is_real:
                     res += reshuffling_expl
                 return res
             else:
                 if 'random_vs_real_n_less' in feature_name:
                     return f'number of {TOPOLOGY_LABEL2NAME[conf]}, ' \
-                           'for which their average tip sampling times are smaller in real subtrees than ' \
+                           'for which their average tip sampling time difference is smaller in real subtrees than ' \
                            f'in the corresponding reshuffled ones. {reshuffling_expl}'
                 elif 'random_vs_real_frac_less' in feature_name:
                     return f'fraction of {TOPOLOGY_LABEL2NAME[conf]}, ' \
-                           'for which their average tip sampling times are smaller in real subtrees than ' \
+                           'for which their average tip sampling time difference is smaller in real subtrees than ' \
                            f'in the corresponding reshuffled ones. {reshuffling_expl}'
                 elif 'random_vs_real_pval_less' in feature_name:
                     return f'p-value of the sign test checking that for {TOPOLOGY_LABEL2NAME[conf]}, ' \
-                           'their average tip sampling times are indistinguishable in real subtrees and ' \
+                           'their average tip sampling time differences are indistinguishable in real subtrees and ' \
                            f'in the corresponding reshuffled ones ' \
                            f'(the alternative hypothesis is that some real ones are smaller). {reshuffling_expl}'
 

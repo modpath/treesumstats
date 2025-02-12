@@ -2,10 +2,9 @@ import unittest
 
 from ete3 import Tree
 
-from treesumstats.topology_sumstats import WIDTH_DEPTH_RATIO, WIDTH_DELTA, IMBALANCE_AVG
-from treesumstats import FeatureManager, FeatureRegistry, NORMALIZED
-from treesumstats.topology_sumstats import TopologyFeatureCalculator, COLLESS, SACKIN, WIDTH_MAX, \
+from treesumstats.balance_sumstats import WIDTH_DEPTH_RATIO, WIDTH_DELTA, IMBALANCE_AVG, BalanceFeatureCalculator, COLLESS, SACKIN, WIDTH_MAX, \
     DEPTH_MAX
+from treesumstats import FeatureManager, FeatureRegistry, NORMALIZED
 
 NWK_CONF = '(((A1:1, A2:1, A3:1)A:1, (B:1, (C:1, (D1:1, D2:1)D:1)CD:1)BD:1)AD:1,' \
            '((E1:1, E2:1, E3:1, E4:1)E:1, X:1)EX:1, ((F1:1, F2:1, F3:1)F:1, G:1)FG:1, (((H1:1, H2:1)H:1, I:1)HI:1, J:1)HJ:1, ' \
@@ -13,10 +12,10 @@ NWK_CONF = '(((A1:1, A2:1, A3:1)A:1, (B:1, (C:1, (D1:1, D2:1)D:1)CD:1)BD:1)AD:1,
 
 NWK = '((A:0.2, B:0.3, A1:0.4)AB:1, (C:0.8, (D:1.2, (E:1.4, F:0.1)EF:1.7)DF:1.5)CF:0.3)root:0.1;'
 
-FeatureRegistry.register(TopologyFeatureCalculator())
+FeatureRegistry.register(BalanceFeatureCalculator)
 
 
-class TopologyTest(unittest.TestCase):
+class BalanceTest(unittest.TestCase):
 
     def test_balance_stats(self):
         tree = Tree(NWK, format=3)

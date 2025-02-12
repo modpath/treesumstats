@@ -21,8 +21,8 @@ COLLESS = 'colless'
 
 DEPTH = "depth"
 
-class TopologyFeatureCalculator(FeatureCalculator):
-    """Computes tree topology-related summary statistics."""
+class BalanceFeatureCalculator(FeatureCalculator):
+    """Computes tree balance-related summary statistics."""
 
     def __init__(self):
         self._in_ladder = None
@@ -84,14 +84,14 @@ class TopologyFeatureCalculator(FeatureCalculator):
                 measure = 'fraction' if feature_name.startswith('frac') else 'number'
                 return f'{measure} of forest internal nodes that are resolved and have a tip descendant [Colijn et al. 2014].'
             elif 'max' in feature_name:
-                res = 'maximum number of connected internal nodes with a single leaf descendant [Colijn et al. 2014].'
+                res = 'maximum number of connected internal nodes with a single tip descendant [Colijn et al. 2014].'
                 if feature_name.endswith(NORMALIZED):
-                    res += ' We calculate it separately on each forest\'s tree and divide it by the number of leaves in that tree. '\
-                           'The maximum of of these values is then reported.'
+                    res += ' We calculate it separately on each forest\'s tree and divide it by the number of tips in that tree. '\
+                           'The maximum of these values is then reported.'
                 return res
         if 'imbalanced' in feature_name:
             measure = 'fraction' if feature_name.startswith('frac') else 'number'
-            return f'{measure} of internal nodes that have different number of leaves ' \
+            return f'{measure} of internal nodes that have different number of tips ' \
                    f'in their smallest and their largest child subtrees [Colijn et al. 2014].'
         if IMBALANCE_AVG == feature_name:
             return 'mean ratio of min-to-max subtree sizes over all internal nodes [Colijn et al. 2014].'

@@ -165,7 +165,7 @@ class BranchFeatureCalculator(FeatureCalculator):
             is_internal = 'inode' in feature_name
             flavour = feature_name.split('_')[-1]
             res = f'{BASIC_METRIC2HELP[flavour]} ' \
-                  f'of the lengths of the forest {'non-root internal nodes' if is_internal else 'tips'}.'
+                  f'of the branch lengths of the forest {'non-root internal nodes' if is_internal else 'tips'}.'
             part = 'top' if 'top' in feature_name \
                 else ('middle' if 'middle' in feature_name else ('bottom' if 'bottom' in feature_name else ''))
             if part:
