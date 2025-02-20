@@ -5,9 +5,10 @@ import numpy as np
 from ete3 import Tree
 
 from treesumstats import FeatureManager, FeatureRegistry, BASIC_ARRAY_METRICS
-from treesumstats.subtree_sumstats import SubtreeFeatureCalculator, TOPOLOGY_LABELS, get_reshuffled_configs, \
+from treesumstats.subtree_sumstats import SubtreeFeatureCalculator, TIP_TOPOLOGY_LABELS, get_reshuffled_configs, \
     get_config2tips, CHERRY, TRIPLET_LADDER, TRIPLET_UNRESOLVED, QUARTET_LADDER, OTHER, CONFIG_ORDER, \
-    QUARTET_UNRESOLVED, QUARTET_TRIPLET_UNRESOLVED_TIP, QUARTET_CHERRY_TIP_TIP, TIP_TIME_PERCENTILES
+    QUARTET_UNRESOLVED, QUARTET_TRIPLET_UNRESOLVED_TIP, QUARTET_CHERRY_TIP_TIP, TIP_TIME_PERCENTILES, TOPOLOGY_LABEL2N, \
+    KEY2TOPOLOGY_LABEL, pick_siblings
 from treesumstats.tree_manager import annotate_forest_with_time, TIME
 
 NWK = '((A1:1, A2:1, A3:1)A:1, (B:1, (C:1, (D1:1, D2:1)D:1)CD:1)BD:1);'
@@ -37,8 +38,6 @@ class TopologyTest(unittest.TestCase):
 
         tree = Tree(NWK_CONF, format=3)
         conf2tips = get_config2tips([tree])
-        for kv in conf2tips.items():
-            print(kv)
         self.assertEqual(len(conf2tips), len(CONFIG_ORDER) - 1)
         self.assertListEqual(CONFIG_ORDER[1:],
                              sorted(conf2tips.keys(), key=lambda _: CONFIG_ORDER.index(_)))
@@ -76,18 +75,32 @@ class TopologyTest(unittest.TestCase):
         self.assertListEqual(conf, ['X'])
 
 
+    def test_sibling_finder(self):
+        tree = Tree(NWK, format=3)
+        inode_lists = pick_siblings([tree])
+        self.assertEqual(len(inode_lists), 1)
+        self.assertEqual(sorted(_.name for _ in inode_lists[0]), ['A', 'BD'])
+
+        tree = Tree(NWK_CONF, format=3)
+        inode_lists = pick_siblings([tree])
+        self.assertEqual(len(inode_lists), 3)
+        conf = sorted('-'.join(sorted(_.name for _ in v)) for v in inode_lists)
+        expected_conf = ['A-BD', 'AD-EX-FG-HJ-KL-MO', 'K-L']
+        self.assertListEqual(expected_conf, conf)
+
+
     def test_tips_in_configs(self):
         tree = Tree(NWK_CONF, format=3)
 
 
 
-        features = [f'n_tips_in_{conf}' for conf in TOPOLOGY_LABELS]
+        features = [f'n_tips_in_{conf}' for conf in TIP_TOPOLOGY_LABELS]
         for feature_name, value, real_value in zip(features,
                                                    FeatureManager.compute_features([tree], *features),
                                                    [5 * 2, 2 * 3, 2 * 3, 1 * 4, 1 * 4, 1 * 4, 2 * 4, 1 * 4, 1 * 1]):
             self.assertEqual(real_value, value, msg=f'Wrong {feature_name} value')
 
-        features = [f'frac_tips_in_{conf}' for conf in TOPOLOGY_LABELS]
+        features = [f'frac_tips_in_{conf}' for conf in TIP_TOPOLOGY_LABELS]
         for feature_name, value, real_value in zip(features,
                                                    FeatureManager.compute_features([tree], *features),
                                                    [5 * 2 / 28,
@@ -97,7 +110,24 @@ class TopologyTest(unittest.TestCase):
             self.assertAlmostEqual(real_value, value, places=6, msg=f'Wrong {feature_name} value')
 
 
-    def test_reshuffled_confs(self):
+
+    def test_inodes_with_wo_siblings(self):
+        tree = Tree(NWK_CONF, format=3)
+
+        features = [f'n_inodes_{wwo}_sibling_inodes' for wwo in ('with', 'without')]
+        for feature_name, value, real_value in zip(features,
+                                                   FeatureManager.compute_features([tree], *features),
+                                                   [10, 7]):
+            self.assertEqual(real_value, value, msg=f'Wrong {feature_name} value')
+
+        features = [f'frac_inodes_{wwo}_sibling_inodes' for wwo in ('with', 'without')]
+        for feature_name, value, real_value in zip(features,
+                                                   FeatureManager.compute_features([tree], *features),
+                                                   [10 / 17, 7 / 17]):
+            self.assertAlmostEqual(real_value, value, places=6, msg=f'Wrong {feature_name} value')
+
+
+    def test_reshuffled_tip_confs(self):
         forest = [Tree(NWK_CONF, format=3)]
         annotate_forest_with_time(forest)
 
@@ -141,8 +171,26 @@ class TopologyTest(unittest.TestCase):
                 counts = Counter([_.name for _ in random_conf])
                 self.assertEqual(1, sum(counts[_.name] for _ in real_conf),
                                  f'Random config {'-'.join(_.name for _ in random_conf)} does not include a tip from the original config {'-'.join(_.name for _ in real_conf)}')
-                self.assertEqual(3, len({_.name for _ in random_conf}),
+                self.assertEqual(TOPOLOGY_LABEL2N[KEY2TOPOLOGY_LABEL[c_type]], len({_.name for _ in random_conf}),
                                  f'Some tips are not different in a random config {'-'.join(_.name for _ in random_conf)}')
+
+
+
+    def test_reshuffled_inode_confs(self):
+        forest = [Tree(NWK_CONF, format=3)]
+        annotate_forest_with_time(forest)
+
+        inode_lists = pick_siblings(forest)
+        all_inodes = sorted([n for n in forest[0].traverse() if not n.is_leaf() and not n.is_root()], key=lambda t: getattr(t, TIME) - t.dist)
+
+
+        for real_conf, random_conf in zip(inode_lists, get_reshuffled_configs(inode_lists, all_inodes)):
+
+            counts = Counter([_.name for _ in random_conf])
+            self.assertEqual(1, sum(counts[_.name] for _ in real_conf),
+                             f'Random config {'-'.join(_.name for _ in random_conf)} does not include an inode from the original config {'-'.join(_.name for _ in real_conf)}')
+            self.assertEqual(len(real_conf), len({_.name for _ in random_conf}),
+                             f'Some inodes are not different in a random config {'-'.join(_.name for _ in random_conf)}')
 
 
     def test_cherry_stats(self):
@@ -161,6 +209,7 @@ class TopologyTest(unittest.TestCase):
                                                    FeatureManager.compute_features([tree], *features),
                                                    np.percentile(real_time_diffs, TIP_TIME_PERCENTILES)):
             self.assertAlmostEqual(real_value, value, msg=f'Wrong {feature_name} value', places=6)
+
 
     def test_quartet_ladder_stats(self):
         tree = Tree(NWK_CONF, format=3)

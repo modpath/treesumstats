@@ -228,11 +228,11 @@ The top part includes times <= T/3, the middle one > T/3 and <= 2T/3, the bottom
 Implemented in [_treesumstats.subtree_sumstats.SubtreeFeatureCalculator_](treesumstats/subtree_sumstats.py).
 
 In some of the following statistics reshuffled subtrees are mentioned. 
-To construct a _reshuffled  subtree_ of a certain kind (cherry, triplet, etc.) from a real one we keep one of its (randomly chosen) tips, 
-while for each other tip from the real subtree we replace it with a tip, for which:
-    (i) the time at the beginning of its branch is as close as possible to the time at the beginning of the real tip's branch, 
-    (ii) while all the tips in the reshuffled  subtree are different and 
-    (iii) there are no two tips in the reshuffled  subtree that used to belong to the same real subtree of this kind 
+To construct a _reshuffled  subtree_ of a certain kind (cherry, triplet, etc.) from a real one we keep one of its (randomly chosen) locally (with respect to the subtree) external node, 
+while for each other locally external node from the real subtree we replace it with a node of globally (with respect to the forest) the same type (external or internal), for which:
+    (i) the time at the beginning of its branch is as close as possible to the time at the beginning of the real node's branch, 
+    (ii) while all the locally external nodes in the reshuffled  subtree are different and 
+    (iii) there are no two locally external nodes in the reshuffled  subtree that used to belong to the same real subtree of this kind 
     (unless there were not enough tips, e.g., 8 tips in total and only 2 ladderized quartets in the forest).
 
 We consider the following 2-tip, 3-tip and 4-tip subtrees to calculate the summary statistics:
@@ -245,39 +245,56 @@ We consider the following 2-tip, 3-tip and 4-tip subtrees to calculate the summa
 * 4L: fully resolved ladderized quartet
 * 4B: fully resolved balanced quartet (with two cherries as children)
 
-In the following statistics (spanning several list positions) X must be replaced by one of the following values: 2, 3U, 3L, 4U, 4U3U1, 4U211, 4L or 4B.
+We also consider fully internal-node subtrees:
+* I: fully unresolved subtree (or size 2 or more) whose locally external nodes are globally internal sibling nodes.
 
-1-8. **frac_tips_in_X:** fraction of forest tips that are found in subtrees of type X.
+In the following statistics (spanning several list positions) XT must be replaced by one of the following values: 2, 3U, 3L, 4U, 4U3U1, 4U211, 4L or 4B, while X must be replaced by either I or one of the XT values.
+
+1-8. **frac_tips_in_XT:** fraction of forest tips that are found in subtrees of type XT.
 9. **frac_tips_in_O:** fraction of forest tips that are not part of any subtree of size 2, 3 or 4.
 
-10-17. **n_tips_in_X:** number of forest tips that are found in subtrees of type X.
+10-17. **n_tips_in_XT:** number of forest tips that are found in subtrees of type XT.
 18. **n_tips_in_O:** number of forest tips that are not part of any subtree of size 2, 3 or 4.
+19. **frac_inodes_with_sibling_inodes:** fraction of forest non-root internal nodes that have internal siblings.
+20. **frac_inodes_without_sibling_inodes:** fraction of forest non-root internal nodes that do not have internal siblings.
+19. **n_inodes_with_sibling_inodes:** number of forest non-root internal nodes that have internal siblings.
+20. **n_inodes_without_sibling_inodes:** number of forest non-root internal nodes that do not have internal siblings.
 
-19-26. **time_diff_in_X_real_mean:** mean among all subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+21-29. **time_diff_in_X_real_mean:** mean among all subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-27-34. **time_diff_in_X_real_min:** minimum among all subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+30-38. **time_diff_in_X_real_min:** minimum among all subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-35-42. **time_diff_in_X_real_max:** maximum among all subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+39-47. **time_diff_in_X_real_max:** maximum among all subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-43-50. **time_diff_in_X_real_var:** variance among all subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+48-56. **time_diff_in_X_real_var:** variance among all subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-51-58. **time_diff_in_X_real_median:** median among all subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+57-65. **time_diff_in_X_real_median:** median among all subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-19-26. **time_diff_in_X_random_mean:** mean among all reshuffled subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+66-74. **time_diff_in_X_random_mean:** mean among all reshuffled subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-27-34. **time_diff_in_X_random_min:** minimum among all reshuffled subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+75-83. **time_diff_in_X_random_min:** minimum among all reshuffled subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-35-42. **time_diff_in_X_random_max:** maximum among all reshuffled subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+84-93. **time_diff_in_X_random_max:** maximum among all reshuffled subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-43-50. **time_diff_in_X_random_var:** variance among all reshuffled subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+94-103. **time_diff_in_X_random_var:** variance among all reshuffled subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-51-58. **time_diff_in_X_random_median:** median among all reshuffled subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+104-112. **time_diff_in_X_random_median:** median among all reshuffled subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-59-122. **time_diff_in_X_real_percN:** Nth percentile (where N can be 1, 5, 10, 25, 75, 90, 95 or 99) among all subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+113-184. **time_diff_in_X_real_percN:** Nth percentile (where N can be 1, 5, 10, 25, 75, 90, 95 or 99) among all subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-123-186. **time_diff_in_X_random_percN:** Nth percentile (where N can be 1, 5, 10, 25, 75, 90, 95 or 99) among all reshuffled subtrees of type X in the forest, of average of all tip pair sampling time differences in the subtree.
+184-255. **time_diff_in_X_random_percN:** Nth percentile (where N can be 1, 5, 10, 25, 75, 90, 95 or 99) among all reshuffled subtrees of type X in the forest, of average of all locally external node pair sampling time differences in the subtree.
 
-187-194. **time_diff_in_X_random_vs_real_n_less:** p-value of the sign test checking that for subtrees of type X, their average tip sampling time differences are indistinguishable in real subtrees and in the corresponding reshuffled  ones (the alternative hypothesis is that some real ones are smaller). 
+256-264. **time_diff_in_X_random_vs_real_n_less:** number of subtrees of type X whose average locally external node sampling time differences is smaller in real subtrees than in the corresponding reshuffled  ones. 
+
+265-273. **time_diff_in_X_random_vs_real_n_more:** number of subtrees of type X whose average locally external node sampling time differences is larger in real subtrees than in the corresponding reshuffled  ones. 
+
+274-282. **time_diff_in_X_random_vs_real_frac_less:** fraction of subtrees of type X whose average locally external node sampling time differences is smaller in real subtrees than in the corresponding reshuffled  ones. 
+
+283-291. **time_diff_in_X_random_vs_real_frac_more:** fraction of subtrees of type X whose average locally external node sampling time differences is larger in real subtrees than in the corresponding reshuffled  ones. 
+
+292-301. **time_diff_in_X_random_vs_real_pval_less:** p-value of the sign test checking that for subtrees of type X, their average locally external node sampling time differences are indistinguishable in real subtrees and in the corresponding reshuffled  ones (the alternative hypothesis is that some real ones are smaller). 
+
+302-310. **time_diff_in_X_random_vs_real_pval_more:** p-value of the sign test checking that for subtrees of type X, their average locally external node sampling time differences are indistinguishable in real subtrees and in the corresponding reshuffled  ones (the alternative hypothesis is that some real ones are larger). 
 
 
 ## Input data

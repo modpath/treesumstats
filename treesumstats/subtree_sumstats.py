@@ -9,7 +9,8 @@ from treesumstats.tree_manager import annotate_forest_with_time, TIME
 
 OTHER_CONFIGURATION_LABEL = 'O'
 
-TOPOLOGY_LABELS = ['2', '3U', '3L', '4U', '4U3U1', '4U211', '4L', '4B', 'O']
+TIP_TOPOLOGY_LABELS = ['2', '3U', '3L', '4U', '4U3U1', '4U211', '4L', '4B', 'O']
+TOPOLOGY_LABELS = TIP_TOPOLOGY_LABELS + ['I']
 
 TIP = 1
 
@@ -32,7 +33,9 @@ CONFIG_ORDER = [TIP, CHERRY, TRIPLET_UNRESOLVED, TRIPLET_LADDER,
 
 TOPOLOGY_LABEL2KEY = {'2': CHERRY, '3U': TRIPLET_UNRESOLVED, '3L': TRIPLET_LADDER, '4U': QUARTET_UNRESOLVED,
                       '4U3U1': QUARTET_TRIPLET_UNRESOLVED_TIP, '4U211': QUARTET_CHERRY_TIP_TIP,
-                      '4L': QUARTET_LADDER, '4B': QUARTET_BALANCED, 'O': 1}
+                      '4L': QUARTET_LADDER, '4B': QUARTET_BALANCED, 'O': 2}
+
+KEY2TOPOLOGY_LABEL = {v: k for (k, v) in TOPOLOGY_LABEL2KEY.items()}
 
 TOPOLOGY_LABEL2N = {'2': 2, '3U': 3, '3L': 3, '4U': 4,
                     '4U3U1': 4, '4U211': 4,
@@ -43,7 +46,8 @@ TOPOLOGY_LABEL2NAME = {'2': 'cherries', '3U': 'unresolved triplets', '3L': 'reso
                        '4U3U1': 'partially resolved quartets with an unresolved triplet and a tip as children',
                        '4U211': 'partially resolved quartets with a cherry and two tips as three children',
                        '4L': 'ladderized fully resolved quartets',
-                       '4B': 'balanced quartets (with two cherries as children)'}
+                       '4B': 'balanced quartets (with two cherries as children)',
+                       'I': 'cherries or fully unresolved n-tip subtrees (n > 2) whose external nodes were internal in the global forest'}
 
 
 TIP_TIME_PERCENTILES = [1, 5, 10, 25, 75, 90, 95, 99]
@@ -70,6 +74,27 @@ def get_config2tips(forest):
             for c in n.children:
                 c.del_feature(feature)
     return topo2tips
+
+
+def pick_siblings(forest, include_polytomies=True):
+    """
+    Picks internal sibling motifs in the given forest.
+
+    :param include_polytomies: bool, whether to include nodes with > 2 children into consideration.
+    :param forest: list(ete3.Tree), the forest of interest
+    :return: iterator of Motif motifs
+    """
+    result = []
+    for tree in forest:
+        for root in tree.traverse():
+            if root.is_leaf() or not include_polytomies and len(root.children) != 2:
+                continue
+            siblings = [_ for _ in root.children if not _.is_leaf()]
+            if len(siblings) < 2:
+                continue
+            result.append(siblings)
+    return result
+
 
 def get_reshuffled_configs(real_configs, all_tips_sorted):
     """
@@ -135,19 +160,21 @@ def get_avg_time_diff(times):
     return 2 * diff_sum / n / (n - 1)
 
 
-
-
 class SubtreeFeatureCalculator(FeatureCalculator):
     """Computes tree topology-related summary statistics."""
 
     def __init__(self):
+        self._n_inodes = None
+        self._sibling_inodes = None
         self._topo2diffs = None
         self._topo2diffs_random = None
         self._all_tips = None
         self._forest = None
         self._topo2tips = None
         self._n_tips = None
-        self._topo2tips_random = None
+        self._sibling_inodes_random = None
+        self._topo2inodes_random = None
+        self._all_inodes = None
 
     def help(self, feature_name, *args, **kwargs):
         if 'tips_in_' in feature_name:
@@ -157,49 +184,61 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                 return f'{measure} of forest tips that are not part of any subtree of size 2, 3 or 4.'
             return f'{measure} of forest tips that are found in {TOPOLOGY_LABEL2NAME[conf]}.'
 
+        if 'inodes_with_sibling_inodes' in feature_name:
+            measure = 'fraction' if feature_name.startswith('frac') else 'number'
+            return f'{measure} of forest non-root internal nodes that have internal node siblings.'
+        if 'inodes_without_sibling_inodes' in feature_name:
+            measure = 'fraction' if feature_name.startswith('frac') else 'number'
+            return f'{measure} of forest non-root internal nodes that do not have internal node siblings.'
+
         if feature_name.startswith('time_diff_in_'):
             conf = feature_name[feature_name.find('time_diff_in_') + len('time_diff_in_'):].split('_')[0]
             is_real='real' in feature_name
 
-            reshuffling_expl = '(To construct a reshuffled subtree of a certain kind from a real one we keep one of its (randomly chosen) tips, ' \
-                               'while for each other tip from the real subtree we replace it with a tip, for which:' \
-                               '(i) the time at the beginning of its branch is as close as possible to the time at the beginning of the real tip\'s branch, ' \
-                               '(ii) while all the tips in the reshuffled subtree are different ' \
-                               'and (iii) there are no two tips in the reshuffled subtree that used to belong to the same real subtree of this kind ' \
-                               '(unless there were not enough tips, e.g., 8 tips in total and only 2 4-tip subtrees in the forest).'
+            reshuffling_expl = '(To construct a reshuffled subtree of a certain kind from a real one we keep one of its (randomly chosen) locally external (with respect to the subtree) nodes, ' \
+                               'while for each of its other locally external node we replace it with a node of the same global type (internal or external, with respect to the global forest), for which:' \
+                               '(i) the time at the beginning of its branch is as close as possible to the time at the beginning of the real locally external node\'s branch, ' \
+                               '(ii) while all the locally external nodes in the reshuffled subtree are different ' \
+                               'and (iii) there are no two locally external nodes in the reshuffled subtree that used to belong to the same real subtree of this kind ' \
+                               '(unless there were not enough such nodes, e.g., 8 tips in total and only 2 4-tip subtrees in the forest).'
 
             flavour = feature_name.split('_')[-1]
             if flavour in BASIC_METRIC2FUN or 'perc' in flavour:
                 res = f'{BASIC_METRIC2HELP[flavour]}' if flavour in BASIC_METRIC2FUN \
                     else f'{re.findall(r'\d+', flavour)[0]}th percentile'
-                res += f' of average of all tip pair sampling time differences in a {TOPOLOGY_LABEL2NAME[conf]} among all {'' if is_real else 'reshuffled'}' \
+                res += f' of average of all external node pair sampling time differences in a {TOPOLOGY_LABEL2NAME[conf]} among all {'' if is_real else 'reshuffled'}' \
                        f'{TOPOLOGY_LABEL2NAME[conf]} in the forest.'
                 if not is_real:
                     res += reshuffling_expl
                 return res
             else:
-                if 'random_vs_real_n_less' in feature_name:
+                if 'random_vs_real_n_' in feature_name:
+                    less_or_more = 'smaller' if 'less' == feature_name.split('_')[-1] else 'larger'
                     return f'number of {TOPOLOGY_LABEL2NAME[conf]}, ' \
-                           'for which their average tip sampling time difference is smaller in real subtrees than ' \
+                           f'for which their average external node sampling time difference is {less_or_more} in real subtrees than ' \
                            f'in the corresponding reshuffled ones. {reshuffling_expl}'
-                elif 'random_vs_real_frac_less' in feature_name:
+                elif 'random_vs_real_frac_' in feature_name:
+                    less_or_more = 'smaller' if 'less' == feature_name.split('_')[-1] else 'larger'
                     return f'fraction of {TOPOLOGY_LABEL2NAME[conf]}, ' \
-                           'for which their average tip sampling time difference is smaller in real subtrees than ' \
+                           f'for which their average external node sampling time difference is {less_or_more} in real subtrees than ' \
                            f'in the corresponding reshuffled ones. {reshuffling_expl}'
-                elif 'random_vs_real_pval_less' in feature_name:
+                elif 'random_vs_real_pval_' in feature_name:
+                    less_or_more = 'smaller' if 'less' == feature_name.split('_')[-1] else 'larger'
                     return f'p-value of the sign test checking that for {TOPOLOGY_LABEL2NAME[conf]}, ' \
-                           'their average tip sampling time differences are indistinguishable in real subtrees and ' \
+                           'their average external node sampling time differences are indistinguishable in real subtrees and ' \
                            f'in the corresponding reshuffled ones ' \
-                           f'(the alternative hypothesis is that some real ones are smaller). {reshuffling_expl}'
+                           f'(the alternative hypothesis is that some real ones are {less_or_more}). {reshuffling_expl}'
 
         return None
 
     def feature_names(self):
         return [f'frac_tips_in_{conf}' for conf in TOPOLOGY_LABELS] \
             + [f'n_tips_in_{conf}' for conf in TOPOLOGY_LABELS] \
+            + [f'frac_inodes_{wwo}_sibling_inodes' for wwo in ('with', 'without')] \
+            + [f'n_inodes_{wwo}_sibling_inodes' for wwo in ('with', 'without')] \
             + [f'time_diff_in_{conf}_{type}_{flavour}' for type in ('real', 'random') for flavour in BASIC_ARRAY_METRICS for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL] \
             + [f'time_diff_in_{conf}_{type}_perc{p}' for type in ('real', 'random') for p in TIP_TIME_PERCENTILES for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL] \
-            + [f'time_diff_in_{conf}_random_vs_real_{metric}_less' for metric in ('n', 'frac', 'pval') for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL]
+            + [f'time_diff_in_{conf}_random_vs_real_{metric}_{how}' for metric in ('n', 'frac', 'pval') for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL for how in ('less', 'more')]
 
     def set_forest(self, forest, **kwargs):
         self._forest = forest
@@ -207,9 +246,13 @@ class SubtreeFeatureCalculator(FeatureCalculator):
         self._topo2tips = None
         self._n_tips = None
         self._all_tips = None
-        self._topo2tips_random = None
+        self._all_inodes = None
+        self._sibling_inodes_random = None
         self._topo2diffs = None
         self._topo2diffs_random = None
+        self._sibling_inodes = None
+        self._topo2inodes_random = None
+        self._n_inodes = None
 
     @property
     def n_tips(self):
@@ -217,18 +260,36 @@ class SubtreeFeatureCalculator(FeatureCalculator):
             self._n_tips = sum(len(tree) for tree in self._forest)
         return self._n_tips
 
+    @property
+    def n_inodes(self):
+        if self._n_inodes is None:
+            self._n_inodes = sum(sum(1 for n in tree.traverse() if not n.is_leaf() and not n.is_root()) for tree in self._forest)
+        return self._n_inodes
+
     def conf2tips(self, config_type, is_real=True):
         if is_real:
             if self._topo2tips is None:
                 self._topo2tips = get_config2tips(self._forest)
             return self._topo2tips[config_type]
 
-        if self._topo2tips_random is None:
-            self._topo2tips_random = dict()
-        if config_type not in self._topo2tips_random:
-            self._topo2tips_random[config_type] = get_reshuffled_configs(self.conf2tips(config_type, is_real=True),
-                                                                         self.all_tips)
-        return self._topo2tips_random[config_type]
+        if self._sibling_inodes_random is None:
+            self._sibling_inodes_random = dict()
+        if config_type not in self._sibling_inodes_random:
+            self._sibling_inodes_random[config_type] = get_reshuffled_configs(self.conf2tips(config_type, is_real=True),
+                                                                              self.all_tips)
+        return self._sibling_inodes_random[config_type]
+
+
+    def sibling_inodes(self, is_real=True):
+        if is_real:
+            if self._sibling_inodes is None:
+                self._sibling_inodes = pick_siblings(self._forest)
+            return self._sibling_inodes
+
+        if self._sibling_inodes_random is None:
+            self._sibling_inodes_random = []
+        self._sibling_inodes_random = get_reshuffled_configs(self.sibling_inodes(is_real=True), self.all_inodes)
+        return self._sibling_inodes_random
 
     def conf2time_diffs(self, config_type, is_real=True):
         if is_real:
@@ -254,11 +315,25 @@ class SubtreeFeatureCalculator(FeatureCalculator):
             self._all_tips = sorted([t for tree in self._forest for t in tree], key=lambda _: getattr(_, TIME) - _.dist)
         return self._all_tips
 
+    @property
+    def all_inodes(self):
+        if self._all_inodes is None:
+            self._all_inodes = sorted([n for tree in self._forest for n in tree.traverse() if not n.is_leaf() and not n.is_root()],
+                                     key=lambda _: getattr(_, TIME) - _.dist)
+        return self._all_inodes
+
     def calculate(self, feature_name, **kwargs):
         if 'tips_in_' in feature_name:
             conf = feature_name[feature_name.find('tips_in_') + len('tips_in_'):]
             denominator = self.n_tips if feature_name.startswith('frac') else 1
             return len(self.conf2tips(TOPOLOGY_LABEL2KEY[conf], is_real=True)) * TOPOLOGY_LABEL2N[conf] / denominator
+
+        if 'inodes_with_sibling_inodes' in feature_name:
+            denominator = self.n_inodes if feature_name.startswith('frac') else 1
+            return sum(len(_) for _ in self.sibling_inodes(is_real=True)) / denominator
+        if 'inodes_without_sibling_inodes' in feature_name:
+            denominator = self.n_inodes if feature_name.startswith('frac') else 1
+            return (self.n_inodes - sum(len(_) for _ in self.sibling_inodes(is_real=True))) / denominator
 
         if feature_name.startswith('time_diff_in_'):
             conf = feature_name[feature_name.find('time_diff_in_') + len('time_diff_in_'):].split('_')[0]
@@ -274,12 +349,12 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                 return np.percentile(time_diffs, perc) if n else 0
             else:
                 time_diffs_random = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real=False)
-                n_random_less_than_real = (time_diffs_random < time_diffs).sum()
-                if 'random_vs_real_n_less' in feature_name:
-                    return n_random_less_than_real
-                elif 'random_vs_real_frac_less' in feature_name:
-                    return n_random_less_than_real / n if n else 0
-                elif 'random_vs_real_pval_less' in feature_name:
-                    return scipy.stats.binomtest(n_random_less_than_real, n=n, p=0.5,
-                                                 alternative='less').pvalue if n else 1
+                is_less = 'less' == feature_name.split('_')[-1]
+                n_random_vs_real = ((time_diffs_random < time_diffs) if is_less else (time_diffs_random > time_diffs)).sum()
+                if 'random_vs_real_n_' in feature_name:
+                    return n_random_vs_real
+                elif 'random_vs_real_frac_' in feature_name:
+                    return n_random_vs_real / n if n else 0
+                elif 'random_vs_real_pval_' in feature_name:
+                    return scipy.stats.binomtest(n_random_vs_real, n=n, p=0.5, alternative='less').pvalue if n else 1
 
