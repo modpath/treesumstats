@@ -30,7 +30,8 @@ def main():
     params = parser.parse_args()
 
     for feature_name in FeatureManager.available_features():
-        print(f'1. **{feature_name}:** {FeatureManager.help(feature_name)}')
+        # print(f'1. **{feature_name}:** {FeatureManager.help(feature_name)}')
+        print(feature_name)
 
 
 if '__main__' == __name__:

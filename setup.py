@@ -18,7 +18,7 @@ setup(
         'Topic :: Software Development',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    version='0.3',
+    version='0.4',
     description='Encoding phylogenetic trees with summary statistics.',
     author='Anna Zhukova',
     author_email='anna.zhukova@pasteur.fr',

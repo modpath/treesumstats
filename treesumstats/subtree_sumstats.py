@@ -10,7 +10,8 @@ from treesumstats.tree_manager import annotate_forest_with_time, TIME
 OTHER_CONFIGURATION_LABEL = 'O'
 
 TIP_TOPOLOGY_LABELS = ['2', '3U', '3L', '4U', '4U3U1', '4U211', '4L', '4B', 'O']
-TOPOLOGY_LABELS = TIP_TOPOLOGY_LABELS + ['I']
+INODE_LABELS = ['I']
+TOPOLOGY_LABELS = TIP_TOPOLOGY_LABELS + INODE_LABELS
 
 TIP = 1
 
@@ -337,7 +338,9 @@ class SubtreeFeatureCalculator(FeatureCalculator):
 
         if feature_name.startswith('time_diff_in_'):
             conf = feature_name[feature_name.find('time_diff_in_') + len('time_diff_in_'):].split('_')[0]
-            time_diffs = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real='real' in feature_name)
+            is_real = 'real' in feature_name
+            time_diffs = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real=is_real) \
+                if conf in TIP_TOPOLOGY_LABELS else self.sibling_inodes(is_real=is_real)
 
 
             flavour = feature_name.split('_')[-1]
@@ -348,7 +351,8 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                 perc = int(re.findall(r'\d+', flavour)[0])
                 return np.percentile(time_diffs, perc) if n else 0
             else:
-                time_diffs_random = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real=False)
+                time_diffs_random = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real=False) \
+                    if conf in TIP_TOPOLOGY_LABELS else self.sibling_inodes(is_real=False)
                 is_less = 'less' == feature_name.split('_')[-1]
                 n_random_vs_real = ((time_diffs_random < time_diffs) if is_less else (time_diffs_random > time_diffs)).sum()
                 if 'random_vs_real_n_' in feature_name:
