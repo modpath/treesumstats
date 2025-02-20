@@ -1,3 +1,5 @@
+import numpy as np
+
 from treesumstats import BASIC_METRIC2HELP, BASIC_METRIC2FUN, FeatureCalculator, MEAN, MED, VAR, EPSILON
 from treesumstats.tree_manager import annotate_forest_with_time, TIME
 
@@ -68,76 +70,56 @@ class BranchFeatureCalculator(FeatureCalculator):
     @property
     def idists_top(self):
         if self._idists_top is None:
-
-            def time_filter(nd):
-                return getattr(nd, TIME) <= self.max_time / 3
-
-            self._idists_top, self._edists_top = self._get_branch_lengths(time_filter)
+            self._idists_top, self._edists_top = self._get_branch_lengths(max_time=self.max_time / 3)
         return self._idists_top
 
     @property
     def edists_top(self):
         if self._edists_top is None:
-
-            def time_filter(nd):
-                return getattr(nd, TIME) <= self.max_time / 3
-
-            self._idists_top, self._edists_top = self._get_branch_lengths(time_filter)
+            self._idists_top, self._edists_top = self._get_branch_lengths(max_time=self.max_time / 3)
         return self._edists_top
 
     @property
     def idists_middle(self):
         if self._idists_middle is None:
-
-            def time_filter(nd):
-                return (getattr(nd, TIME) <= 2 * self.max_time / 3) \
-                    and (self.max_time / 3 < (getattr(nd, TIME) - nd.dist))
-
-            self._idists_middle, self._edists_middle = self._get_branch_lengths(time_filter)
+            self._idists_middle, self._edists_middle = \
+                self._get_branch_lengths(min_time=self.max_time / 3, max_time=2 * self.max_time / 3)
         return self._idists_middle
 
     @property
     def edists_middle(self):
         if self._edists_middle is None:
-
-            def time_filter(nd):
-                return (getattr(nd, TIME) <= 2 * self.max_time / 3) \
-                    and (self.max_time / 3 < (getattr(nd, TIME) - nd.dist))
-
-            self._idists_middle, self._edists_middle = self._get_branch_lengths(time_filter)
+            self._idists_middle, self._edists_middle = \
+                self._get_branch_lengths(min_time=self.max_time / 3, max_time=2 * self.max_time / 3)
         return self._edists_middle
 
     @property
     def idists_bottom(self):
         if self._idists_bottom is None:
-
-            def time_filter(nd):
-                return 2 * self.max_time / 3 < (getattr(nd, TIME) - nd.dist)
-
-            self._idists_bottom, self._edists_bottom = self._get_branch_lengths(time_filter)
+            self._idists_bottom, self._edists_bottom = self._get_branch_lengths(min_time=2 * self.max_time / 3)
         return self._idists_bottom
 
     @property
     def edists_bottom(self):
         if self._edists is None:
-
-            def time_filter(nd):
-                return 2 * self.max_time / 3 < (getattr(nd, TIME) - nd.dist)
-
-            self._idists_bottom, self._edists_bottom = self._get_branch_lengths(time_filter)
+            self._idists_bottom, self._edists_bottom = self._get_branch_lengths(min_time=2 * self.max_time / 3)
         return self._edists_bottom
 
-    def _get_branch_lengths(self, node_filter=lambda nd: True):
+    def _get_branch_lengths(self, min_time=-np.inf, max_time=np.inf):
         internal_dists, external_dists = [], []
 
         for tree in self._forest:
             for n in tree.traverse():
-                if not node_filter(n):
+                n_time = getattr(n, TIME)
+                if n_time <= min_time or n_time > max_time:
                     continue
+
+                dist = min(n.dist, n_time - min_time)
+
                 if n.is_leaf():
-                    external_dists.append(n.dist)
-                elif not n.is_root():
-                    internal_dists.append(n.dist)
+                    external_dists.append(dist)
+                else:
+                    internal_dists.append(dist)
         return internal_dists, external_dists
 
 
@@ -165,11 +147,11 @@ class BranchFeatureCalculator(FeatureCalculator):
             is_internal = 'inode' in feature_name
             flavour = feature_name.split('_')[-1]
             res = f'{BASIC_METRIC2HELP[flavour]} ' \
-                  f'of the branch lengths of the forest {'non-root internal nodes' if is_internal else 'tips'}.'
+                  f'of the branch lengths of the forest {'internal nodes' if is_internal else 'tips'}.'
             part = 'top' if 'top' in feature_name \
                 else ('middle' if 'middle' in feature_name else ('bottom' if 'bottom' in feature_name else ''))
             if part:
-                res += f' Only branches starting and finishing in the {part} third of the forest are considered. ' \
+                res += f' Only branches finishing in the {part} third of the forest are considered. Their start time is cut to the start of the interval if they started before.' \
                        f'(The total time between the earliest forest tree start and the last sampled tip '\
                        'is split into three equal parts.)'
             return res

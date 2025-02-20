@@ -99,44 +99,45 @@ Implemented in [_treesumstats.branch_sumstats.BranchFeatureCalculator_](treesums
 
 The following statistics include ones calculated on the full forest, but also those calculated on its top, middle or bottom parts. 
 The total time between the earliest forest tree start (0) and the time of the last sampled tip (T) is split into three equal parts. 
-For each part only the branches starting and finishing within the corresponding time period are considered.
+For each part only the branches finishing within the corresponding time period are considered, 
+and their start time is cut to the interval start time for the branches that started before.
 
-1. **brlen_inode_mean:** average of branch lengths of the forest non-root internal nodes.
-1. **brlen_inode_median:** median of branch lengths of the forest non-root internal nodes.
-1. **brlen_inode_var:** variance of branch lengths of the forest non-root internal nodes.
+1. **brlen_inode_mean:** average of branch lengths of the forest internal nodes.
+1. **brlen_inode_median:** median of branch lengths of the forest internal nodes.
+1. **brlen_inode_var:** variance of branch lengths of the forest internal nodes.
 1. **brlen_tip_mean:** average of branch lengths of the forest tips.
 1. **brlen_tip_median:** median of branch lengths of the forest tips.
 1. **brlen_tip_var:** variance of branch lengths of the forest tips.
-1. **brlen_inode_top_mean:** average of branch lengths of the forest's top non-root internal nodes. 
-1. **brlen_inode_top_median:** median of branch lengths of the forest's top non-root internal nodes.
-1. **brlen_inode_top_var:** variance of branch lengths of the forest's top non-root internal nodes.
+1. **brlen_inode_top_mean:** average of branch lengths of the forest's top internal nodes. 
+1. **brlen_inode_top_median:** median of branch lengths of the forest's top internal nodes.
+1. **brlen_inode_top_var:** variance of branch lengths of the forest's top internal nodes.
 1. **brlen_tip_top_mean:** average of branch lengths of the forest's top tips.
 1. **brlen_tip_top_median:** median of branch lengths of the forest's top tips. 
 1. **brlen_tip_top_var:** variance of branch lengths of the forest's top tips.
-1. **brlen_inode_middle_mean:** average of branch lengths of the forest's middle non-root internal nodes.
-1. **brlen_inode_middle_median:** median of branch lengths of the forest's middle non-root internal nodes.
-1. **brlen_inode_middle_var:** variance of branch lengths of the forest's middle non-root internal nodes.
+1. **brlen_inode_middle_mean:** average of branch lengths of the forest's middle internal nodes.
+1. **brlen_inode_middle_median:** median of branch lengths of the forest's middle internal nodes.
+1. **brlen_inode_middle_var:** variance of branch lengths of the forest's middle internal nodes.
 1. **brlen_tip_middle_mean:** average of branch lengths of the forest's middle tips.
 1. **brlen_tip_middle_median:** median of branch lengths of the forest's middle tips.
 1. **brlen_tip_middle_var:** variance of branch lengths of the forest's middle tips.
-1. **brlen_inode_bottom_mean:** average of branch lengths of the forest's bottom non-root internal nodes.
-1. **brlen_inode_bottom_median:** median of branch lengths of the forest's bottom non-root internal nodes.
-1. **brlen_inode_bottom_var:** variance of branch lengths of the forest's bottom non-root internal nodes.
+1. **brlen_inode_bottom_mean:** average of branch lengths of the forest's bottom internal nodes.
+1. **brlen_inode_bottom_median:** median of branch lengths of the forest's bottom internal nodes.
+1. **brlen_inode_bottom_var:** variance of branch lengths of the forest's bottom internal nodes.
 1. **brlen_tip_bottom_mean:** average of branch lengths of the forest's bottom tips.
 1. **brlen_tip_bottom_median:** median of branch lengths of the forest's bottom tips.
 1. **brlen_tip_bottom_var:** variance of branch lengths of the forest's bottom tips.
-1. **frac_brlen_inode_mean_by_brlen_tip_mean:** fraction of two values. The dividend is average of branch lengths of the forest non-root internal nodes. The divisor is average of branch lengths of the forest tips.
-1. **frac_brlen_inode_median_by_brlen_tip_median:** fraction of two values. The dividend is median of branch lengths of the forest non-root internal nodes. The divisor is median of branch lengths of the forest tips.
-1. **frac_brlen_inode_var_by_brlen_tip_var:** fraction of two values. The dividend is variance of branch lengths of the forest non-root internal nodes. The divisor is variance of branch lengths of the forest tips.
-1. **frac_brlen_inode_top_mean_by_brlen_tip_top_mean:** fraction of two values. The dividend is average of branch lengths of the forest's top non-root internal nodes. The divisor is average of branch lengths of the forest's top tips.
-1. **frac_brlen_inode_top_median_by_brlen_tip_top_median:** fraction of two values. The dividend is median of branch lengths of the forest's top non-root internal nodes. The divisor is median of branch lengths of the forest's top tips.
-1. **frac_brlen_inode_top_var_by_brlen_tip_top_var:** fraction of two values. The dividend is variance of branch lengths of the forest's top non-root internal nodes. The divisor is variance of branch lengths of the forest's top tips.
-1. **frac_brlen_inode_middle_mean_by_brlen_tip_middle_mean:** fraction of two values. The dividend is average of branch lengths of the forest's middle non-root internal nodes. The divisor is average of branch lengths of the forest's middle tips.
-1. **frac_brlen_inode_middle_median_by_brlen_tip_middle_median:** fraction of two values. The dividend is median of branch lengths of the forest's middle non-root internal nodes. The divisor is median of branch lengths of the forest's middle tips.
-1. **frac_brlen_inode_middle_var_by_brlen_tip_middle_var:** fraction of two values. The dividend is variance of branch lengths of the forest's middle non-root internal nodes. The divisor is variance of branch lengths of the forest's middle tips.
-1. **frac_brlen_inode_bottom_mean_by_brlen_tip_bottom_mean:** fraction of two values. The dividend is average of branch lengths of the forest's bottom non-root internal nodes. The divisor is average of branch lengths of the forest's bottom tips.
-1. **frac_brlen_inode_bottom_median_by_brlen_tip_bottom_median:** fraction of two values. The dividend is median of branch lengths of the forest's bottom non-root internal nodes. The divisor is median of branch lengths of the forest's bottom tips.
-1. **frac_brlen_inode_bottom_var_by_brlen_tip_bottom_var:** fraction of two values. The dividend is variance of branch lengths of the forest's bottom non-root internal nodes. The divisor is variance of branch lengths of the forest's bottom tips.
+1. **frac_brlen_inode_mean_by_brlen_tip_mean:** fraction of two values. The dividend is average of branch lengths of the forest internal nodes. The divisor is average of branch lengths of the forest tips.
+1. **frac_brlen_inode_median_by_brlen_tip_median:** fraction of two values. The dividend is median of branch lengths of the forest internal nodes. The divisor is median of branch lengths of the forest tips.
+1. **frac_brlen_inode_var_by_brlen_tip_var:** fraction of two values. The dividend is variance of branch lengths of the forest internal nodes. The divisor is variance of branch lengths of the forest tips.
+1. **frac_brlen_inode_top_mean_by_brlen_tip_top_mean:** fraction of two values. The dividend is average of branch lengths of the forest's top internal nodes. The divisor is average of branch lengths of the forest's top tips.
+1. **frac_brlen_inode_top_median_by_brlen_tip_top_median:** fraction of two values. The dividend is median of branch lengths of the forest's top internal nodes. The divisor is median of branch lengths of the forest's top tips.
+1. **frac_brlen_inode_top_var_by_brlen_tip_top_var:** fraction of two values. The dividend is variance of branch lengths of the forest's top internal nodes. The divisor is variance of branch lengths of the forest's top tips.
+1. **frac_brlen_inode_middle_mean_by_brlen_tip_middle_mean:** fraction of two values. The dividend is average of branch lengths of the forest's middle internal nodes. The divisor is average of branch lengths of the forest's middle tips.
+1. **frac_brlen_inode_middle_median_by_brlen_tip_middle_median:** fraction of two values. The dividend is median of branch lengths of the forest's middle internal nodes. The divisor is median of branch lengths of the forest's middle tips.
+1. **frac_brlen_inode_middle_var_by_brlen_tip_middle_var:** fraction of two values. The dividend is variance of branch lengths of the forest's middle internal nodes. The divisor is variance of branch lengths of the forest's middle tips.
+1. **frac_brlen_inode_bottom_mean_by_brlen_tip_bottom_mean:** fraction of two values. The dividend is average of branch lengths of the forest's bottom internal nodes. The divisor is average of branch lengths of the forest's bottom tips.
+1. **frac_brlen_inode_bottom_median_by_brlen_tip_bottom_median:** fraction of two values. The dividend is median of branch lengths of the forest's bottom internal nodes. The divisor is median of branch lengths of the forest's bottom tips.
+1. **frac_brlen_inode_bottom_var_by_brlen_tip_bottom_var:** fraction of two values. The dividend is variance of branch lengths of the forest's bottom internal nodes. The divisor is variance of branch lengths of the forest's bottom tips.
 
 
 ### Transmission chain statistics
