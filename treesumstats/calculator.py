@@ -53,9 +53,9 @@ def main():
     forest = read_forest(params.nwk)
     features = params.statistics if params.statistics else FeatureManager.available_features()
     with open(params.tab, 'w+') as f:
-        f.write(f'statistic\tvalue{'\tdescription' if params.add_definitions else ''}\n')
+        f.write(f'statistic\tvalue{'\tdescription' if params.add_descriptions else ''}\n')
         for feature_name, value in zip(features, FeatureManager.compute_features(forest, *features)):
-            f.write(f'{feature_name}\t{format_value(value)}{f"\t{FeatureManager.help(feature_name)}" if params.add_definitions else ""}\n')
+            f.write(f'{feature_name}\t{format_value(value)}{f"\t{FeatureManager.help(feature_name)}" if params.add_descriptions else ""}\n')
 
 
 if '__main__' == __name__:

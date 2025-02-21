@@ -4,7 +4,7 @@ from collections import defaultdict
 import numpy as np
 import scipy
 
-from treesumstats import FeatureCalculator, BASIC_METRIC2FUN, BASIC_METRIC2HELP, BASIC_ARRAY_METRICS
+from treesumstats import FeatureCalculator, BASIC_METRIC2FUN, BASIC_METRIC2HELP, BASIC_ARRAY_METRICS, EPSILON
 from treesumstats.tree_manager import annotate_forest_with_time, TIME
 
 OTHER_CONFIGURATION_LABEL = 'O'
@@ -34,7 +34,7 @@ CONFIG_ORDER = [TIP, CHERRY, TRIPLET_UNRESOLVED, TRIPLET_LADDER,
 
 TOPOLOGY_LABEL2KEY = {'2': CHERRY, '3U': TRIPLET_UNRESOLVED, '3L': TRIPLET_LADDER, '4U': QUARTET_UNRESOLVED,
                       '4U3U1': QUARTET_TRIPLET_UNRESOLVED_TIP, '4U211': QUARTET_CHERRY_TIP_TIP,
-                      '4L': QUARTET_LADDER, '4B': QUARTET_BALANCED, 'O': 2}
+                      '4L': QUARTET_LADDER, '4B': QUARTET_BALANCED, 'O': 2, 'I': -1}
 
 KEY2TOPOLOGY_LABEL = {v: k for (k, v) in TOPOLOGY_LABEL2KEY.items()}
 
@@ -114,7 +114,6 @@ def get_reshuffled_configs(real_configs, all_tips_sorted):
     if not len(real_configs):
         return real_configs
 
-    config_len = len(real_configs[0])
     tip2config = {t: i for i, conf in enumerate(real_configs) for t in conf}
 
     def get_start_time(tip):
@@ -128,10 +127,13 @@ def get_reshuffled_configs(real_configs, all_tips_sorted):
 
         next_tip = next((all_tips_sorted[_] for _ in range(j + 1, n_tips) if is_ok(all_tips_sorted[_])), None)
         prev_tip = next((all_tips_sorted[_] for _ in range(j - 1, -1, -1) if is_ok(all_tips_sorted[_])), None)
+        if prev_tip is None and next_tip is None:
+            return tip
         return min([_ for _ in (next_tip, prev_tip) if not _ is None], key=lambda t: np.abs(get_start_time(t) - tip_stime))
 
     reshuffled_confs = []
     for i, conf in enumerate(real_configs):
+        config_len = len(conf)
         fixed_tip = np.random.choice(conf, size=1, replace=False)[0]
         used_tips = []
         used_configs = {i}
@@ -165,6 +167,7 @@ class SubtreeFeatureCalculator(FeatureCalculator):
     """Computes tree topology-related summary statistics."""
 
     def __init__(self):
+        self._topo2tips_random = None
         self._n_inodes = None
         self._sibling_inodes = None
         self._topo2diffs = None
@@ -233,8 +236,8 @@ class SubtreeFeatureCalculator(FeatureCalculator):
         return None
 
     def feature_names(self):
-        return [f'frac_tips_in_{conf}' for conf in TOPOLOGY_LABELS] \
-            + [f'n_tips_in_{conf}' for conf in TOPOLOGY_LABELS] \
+        return [f'frac_tips_in_{conf}' for conf in TIP_TOPOLOGY_LABELS] \
+            + [f'n_tips_in_{conf}' for conf in TIP_TOPOLOGY_LABELS] \
             + [f'frac_inodes_{wwo}_sibling_inodes' for wwo in ('with', 'without')] \
             + [f'n_inodes_{wwo}_sibling_inodes' for wwo in ('with', 'without')] \
             + [f'time_diff_in_{conf}_{type}_{flavour}' for type in ('real', 'random') for flavour in BASIC_ARRAY_METRICS for conf in TOPOLOGY_LABELS if conf != OTHER_CONFIGURATION_LABEL] \
@@ -254,6 +257,7 @@ class SubtreeFeatureCalculator(FeatureCalculator):
         self._sibling_inodes = None
         self._topo2inodes_random = None
         self._n_inodes = None
+        self._topo2tips_random = None
 
     @property
     def n_tips(self):
@@ -273,12 +277,12 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                 self._topo2tips = get_config2tips(self._forest)
             return self._topo2tips[config_type]
 
-        if self._sibling_inodes_random is None:
-            self._sibling_inodes_random = dict()
-        if config_type not in self._sibling_inodes_random:
-            self._sibling_inodes_random[config_type] = get_reshuffled_configs(self.conf2tips(config_type, is_real=True),
+        if self._topo2tips_random is None:
+            self._topo2tips_random = dict()
+        if config_type not in self._topo2tips_random:
+            self._topo2tips_random[config_type] = get_reshuffled_configs(self.conf2tips(config_type, is_real=True),
                                                                               self.all_tips)
-        return self._sibling_inodes_random[config_type]
+        return self._topo2tips_random[config_type]
 
 
     def sibling_inodes(self, is_real=True):
@@ -293,18 +297,19 @@ class SubtreeFeatureCalculator(FeatureCalculator):
         return self._sibling_inodes_random
 
     def conf2time_diffs(self, config_type, is_real=True):
+        is_tip_config = KEY2TOPOLOGY_LABEL[config_type] in TIP_TOPOLOGY_LABELS
         if is_real:
             if self._topo2diffs is None:
                 self._topo2diffs = {}
             if config_type not in self._topo2diffs:
-                confs_real = self.conf2tips(config_type, is_real=True)
+                confs_real = self.conf2tips(config_type, is_real=True) if is_tip_config else self.sibling_inodes(is_real=True)
                 self._topo2diffs[config_type] = np.array([get_avg_time_diff([getattr(_, TIME) for _ in c]) for c in confs_real])
             return self._topo2diffs[config_type]
         if self._topo2diffs_random is None:
             self._topo2diffs_random = {}
         if config_type not in self._topo2diffs_random:
-            confs_real = self.conf2tips(config_type, is_real=True)
-            confs_random = self.conf2tips(config_type, is_real=False)
+            confs_real = self.conf2tips(config_type, is_real=True) if is_tip_config else self.sibling_inodes(is_real=True)
+            confs_random = self.conf2tips(config_type, is_real=False) if is_tip_config else self.sibling_inodes(is_real=False)
             self._topo2diffs_random[config_type] = np.array([get_avg_time_diff([getattr(t, TIME) - t.dist + tr.dist
                                                                                 for t, tr in zip(c, cr)])
                                                              for c, cr in zip(confs_real, confs_random)])
@@ -330,18 +335,16 @@ class SubtreeFeatureCalculator(FeatureCalculator):
             return len(self.conf2tips(TOPOLOGY_LABEL2KEY[conf], is_real=True)) * TOPOLOGY_LABEL2N[conf] / denominator
 
         if 'inodes_with_sibling_inodes' in feature_name:
-            denominator = self.n_inodes if feature_name.startswith('frac') else 1
+            denominator = max(self.n_inodes, EPSILON) if feature_name.startswith('frac') else 1
             return sum(len(_) for _ in self.sibling_inodes(is_real=True)) / denominator
         if 'inodes_without_sibling_inodes' in feature_name:
-            denominator = self.n_inodes if feature_name.startswith('frac') else 1
+            denominator = max(self.n_inodes, EPSILON) if feature_name.startswith('frac') else 1
             return (self.n_inodes - sum(len(_) for _ in self.sibling_inodes(is_real=True))) / denominator
 
         if feature_name.startswith('time_diff_in_'):
             conf = feature_name[feature_name.find('time_diff_in_') + len('time_diff_in_'):].split('_')[0]
             is_real = 'real' in feature_name
-            time_diffs = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real=is_real) \
-                if conf in TIP_TOPOLOGY_LABELS else self.sibling_inodes(is_real=is_real)
-
+            time_diffs = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real=is_real)
 
             flavour = feature_name.split('_')[-1]
             n = len(time_diffs)
@@ -351,14 +354,13 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                 perc = int(re.findall(r'\d+', flavour)[0])
                 return np.percentile(time_diffs, perc) if n else 0
             else:
-                time_diffs_random = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real=False) \
-                    if conf in TIP_TOPOLOGY_LABELS else self.sibling_inodes(is_real=False)
+                time_diffs_random = self.conf2time_diffs(TOPOLOGY_LABEL2KEY[conf], is_real=False)
                 is_less = 'less' == feature_name.split('_')[-1]
                 n_random_vs_real = ((time_diffs_random < time_diffs) if is_less else (time_diffs_random > time_diffs)).sum()
                 if 'random_vs_real_n_' in feature_name:
                     return n_random_vs_real
                 elif 'random_vs_real_frac_' in feature_name:
-                    return n_random_vs_real / n if n else 0
+                    return n_random_vs_real / n if n else 0.5
                 elif 'random_vs_real_pval_' in feature_name:
-                    return scipy.stats.binomtest(n_random_vs_real, n=n, p=0.5, alternative='less').pvalue if n else 1
+                    return scipy.stats.binomtest(n_random_vs_real, n=n, p=0.5, alternative='less').pvalue if n else 0.5
 
