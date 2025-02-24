@@ -80,8 +80,8 @@ class TransmissionChainFeatureCalculator(FeatureCalculator):
 
     def help(self, feature_name, *args, **kwargs):
         if feature_name.startswith(f'n_{self._chain_len}-{CHAIN}'):
-            return f'number of {self._chain_len}-node transmission chains'\
-                   f'{', divided by the number of internal nodes' if NORMALIZED in feature_name else ''}. ' \
+            return f'number of {self._chain_len}-node transmission chains' +\
+                   (', divided by the number of internal nodes. ' if NORMALIZED in feature_name else '. ') +\
                    f'(A {self._chain_len}-node transmission chain of node i is the shortest {self._chain_len}-branch path descending from i [Voznica et al. 2022].)'
         if feature_name.startswith(f'brlen_sum_{self._chain_len}-{CHAIN}'):
             flavour = feature_name.split('_')[-1]

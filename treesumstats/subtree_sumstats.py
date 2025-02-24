@@ -208,9 +208,13 @@ class SubtreeFeatureCalculator(FeatureCalculator):
 
             flavour = feature_name.split('_')[-1]
             if flavour in BASIC_METRIC2FUN or 'perc' in flavour:
-                res = f'{BASIC_METRIC2HELP[flavour]}' if flavour in BASIC_METRIC2FUN \
-                    else f'{re.findall(r'\d+', flavour)[0]}th percentile'
-                res += f' of average of all external node pair sampling time differences in a {TOPOLOGY_LABEL2NAME[conf]} among all {'' if is_real else 'reshuffled'}' \
+                if flavour in BASIC_METRIC2FUN:
+                    res = {BASIC_METRIC2HELP[flavour]}
+                else:
+                    perc = re.findall(r"\d+", flavour)[0]
+                    res = f'{perc}th percentile'
+                res += f' of average of all external node pair sampling time differences in a {TOPOLOGY_LABEL2NAME[conf]} among all ' + \
+                       ('' if is_real else 'reshuffled') + \
                        f'{TOPOLOGY_LABEL2NAME[conf]} in the forest.'
                 if not is_real:
                     res += reshuffling_expl
@@ -228,9 +232,9 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                            f'in the corresponding reshuffled ones. {reshuffling_expl}'
                 elif 'random_vs_real_pval_' in feature_name:
                     less_or_more = 'smaller' if 'less' == feature_name.split('_')[-1] else 'larger'
-                    return f'p-value of the sign test checking that for {TOPOLOGY_LABEL2NAME[conf]}, ' \
+                    return f'p-value of the sign test checking that for {TOPOLOGY_LABEL2NAME[conf]}, ' +\
                            'their average external node sampling time differences are indistinguishable in real subtrees and ' \
-                           f'in the corresponding reshuffled ones ' \
+                           'in the corresponding reshuffled ones ' +\
                            f'(the alternative hypothesis is that some real ones are {less_or_more}). {reshuffling_expl}'
 
         return None

@@ -292,7 +292,7 @@ class LTTFeatureCalculator(FeatureCalculator):
         if feature_name.startswith('ltt'):
             coordinate = int(re.findall(r'\d+', feature_name)[0])
             explanation = f", where times t_i (0 ≤ i ≤ {self._n_coordinates}) are equally distributed between " \
-                          f"the time of the start of the first tree (t_0 = 0) in the forest and " \
+                          "the time of the start of the first tree (t_0 = 0) in the forest and " + \
                           f"the time of the forest’s last sampled tip (t_{self._n_coordinates}=T)."
             if 'time' in feature_name:
                 # Invert the time so that the end of the sampling period is at time 0
@@ -300,9 +300,9 @@ class LTTFeatureCalculator(FeatureCalculator):
             if 'trees' in feature_name:
                 return f"number of trees present at t_{coordinate}{explanation}"
             if 'lineages' in feature_name:
-                return f'number of lineages present at t_{coordinate}' \
-                       f'{' divided by the total number of tips in the forest' if feature_name.endswith(NORMALIZED) else ''}' \
-                       f'{explanation}'
+                norm_explanation = " divided by the total number of tips in the forest" if feature_name.endswith(
+                    NORMALIZED) else ""
+                return f'number of lineages present at t_{coordinate}{norm_explanation}{explanation}'
             return None
 
         part = 'top' if '_top' in feature_name \
@@ -310,27 +310,26 @@ class LTTFeatureCalculator(FeatureCalculator):
         explanation = ''
         if part:
             feature_name = feature_name.replace(f'_{part}', '')
-            start_time = "the first tree start" if "top" == part else f"{'2' if 'bottom' == part else ''}T/3"
-            end_time = "T" if "bottom" == part else f"{'2' if 'middle' == part else ''}T/3"
+            start_time = "the first tree start" if "top" == part else ('2T/3' if 'bottom' == part else 'T/3')
+            end_time = "T" if "bottom" == part else ('2T/3' if 'middle' == part else 'T/3')
             explanation = f" in the {part} part of the forest: between {start_time} and {end_time}"
         else:
             start_time = "first tree start"
             end_time = "T"
 
         if 'time_trees_max' == feature_name:
-            return f"T - t_tmax, where T is the sampling time of the last forest's tip " \
+            return "T - t_tmax, where T is the sampling time of the last forest's tip " + \
                    f"and t_tmax is the time when the maximum number of trees was first achieved{explanation}."
         if 'trees_max' == feature_name:
             return f"maximum number of trees{explanation}."
 
         if 'time_lineages_max' == feature_name:
-            return f"T - t_lmax, where T is the sampling time of the last forest's tip " \
+            return "T - t_lmax, where T is the sampling time of the last forest's tip " + \
                    f"and t_lmax is the time when the maximum number of lineages was first achieved{explanation}."
         if feature_name.startswith('lineages_max'):
-            return f"maximum number of lineages" \
-                   f"{explanation}" \
-                   f"{', divided by the total number of tips in the forest' if feature_name.endswith(NORMALIZED) else ''}."
-        long_exp = f", where t_lmax is the time when the maximum number of lineages was first achieved{explanation}, " \
+            return f"maximum number of lineages{explanation}" + \
+                   (', divided by the total number of tips in the forest.' if feature_name.endswith(NORMALIZED) else '.')
+        long_exp = f", where t_lmax is the time when the maximum number of lineages was first achieved{explanation}, " +\
                    "where T is the sampling time of the last forest's tip."
         if feature_name.startswith('lineage_start_to_max_slope'):
             res = f"linear slope between the lineages at the {start_time} and t_lmax{long_exp}"

@@ -41,13 +41,13 @@ class BalanceFeatureCalculator(FeatureCalculator):
 
     def help(self, feature_name, *args, **kwargs):
         if feature_name.startswith(COLLESS):
-            res = f'sum (over internal nodes) of absolute differences of numbers of tips in their left and right subtrees [Colless 1982].'
+            res = 'sum (over internal nodes) of absolute differences of numbers of tips in their left and right subtrees [Colless 1982].'
             if feature_name.endswith(NORMALIZED):
                 res += ' We normalize it by dividing it by this metric for a forest of a ladder and all the other trees only having 1 tip: '\
                        '(n_tips - n_trees - 1) (n_tips - n_trees) / 2.'
             return res
         if feature_name.startswith(SACKIN):
-            res = f'sum (over tips) of the number of internal nodes separating them from the root [Sackin 1972].'
+            res = 'sum (over tips) of the number of internal nodes separating them from the root [Sackin 1972].'
             if feature_name.endswith(NORMALIZED):
                 res += ' We normalize it by dividing it the value of this metric for a forest of a ladder and all the other trees only having 1 tip: '\
                        '(n_tips - n_trees) (n_tips - n_trees + 1) / 2 - 1.'
@@ -92,7 +92,7 @@ class BalanceFeatureCalculator(FeatureCalculator):
         if 'imbalanced' in feature_name:
             measure = 'fraction' if feature_name.startswith('frac') else 'number'
             return f'{measure} of internal nodes that have different number of tips ' \
-                   f'in their smallest and their largest child subtrees [Colijn et al. 2014].'
+                   'in their smallest and their largest child subtrees [Colijn et al. 2014].'
         if IMBALANCE_AVG == feature_name:
             return 'mean ratio of min-to-max subtree sizes over all internal nodes [Colijn et al. 2014].'
         return None

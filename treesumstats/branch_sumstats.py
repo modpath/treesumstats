@@ -146,17 +146,18 @@ class BranchFeatureCalculator(FeatureCalculator):
         if feature_name.startswith(BRLEN):
             is_internal = 'inode' in feature_name
             flavour = feature_name.split('_')[-1]
-            res = f'{BASIC_METRIC2HELP[flavour]} ' \
-                  f'of the branch lengths of the forest {'internal nodes' if is_internal else 'tips'}.'
+            res = BASIC_METRIC2HELP[flavour] +\
+                  f' of the branch lengths of the forest {'internal nodes' if is_internal else 'tips'}.'
             part = 'top' if 'top' in feature_name \
                 else ('middle' if 'middle' in feature_name else ('bottom' if 'bottom' in feature_name else ''))
             if part:
-                res += f' Only branches finishing in the {part} third of the forest are considered. Their start time is cut to the start of the interval if they started before.' \
-                       f'(The total time between the earliest forest tree start and the last sampled tip '\
+                res += f' Only branches finishing in the {part} third of the forest are considered. ' \
+                       'Their start time is cut to the start of the interval if they started before.' \
+                       '(The total time between the earliest forest tree start and the last sampled tip '\
                        'is split into three equal parts.)'
             return res
         if feature_name.startswith('frac'):
             feature_name_1, feature_name_2 = feature_name[len('frac_'):].split('_by_')
-            return f'fraction of two values. The dividend is {self.help(feature_name_1).split('.')[0]}. '\
+            return f'fraction of two values. The dividend is {self.help(feature_name_1).split('.')[0]}. ' +\
                    f'The divisor is {self.help(feature_name_2)}'
         return None
