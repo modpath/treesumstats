@@ -4,16 +4,17 @@ Representing phylogenetic trees (or forests of such trees) as summary statistics
 
 
 
-[//]: # ([![DOI:10.1093/sysbio/syad059]&#40;https://zenodo.org/badge/DOI/10.1093/sysbio/syad059.svg&#41;]&#40;https://doi.org/10.1093/sysbio/syad059&#41;)
-[//]: # ([![GitHub release]&#40;https://img.shields.io/github/v/release/evolbioinfo/treesumstats.svg&#41;]&#40;https://github.com/evolbioinfo/treesumstats/releases&#41;)
+[![DOI:10.1093/molbev/msag268](https://zenodo.org/badge/DOI/10.1093/molbev/msag268.svg)](https://doi.org/10.1093/molbev/msag268)
+[![GitHub release](https://img.shields.io/github/v/release/modpath/treesumstats.svg)](https://github.com/modpath/treesumstats/releases)
 [![PyPI version](https://badge.fury.io/py/treesumstats.svg)](https://pypi.org/project/treesumstats/)
 [![PyPI downloads](https://shields.io/pypi/dm/treesumstats)](https://pypi.org/project/treesumstats/)
 [![Docker pulls](https://img.shields.io/docker/pulls/evolbioinfo/treesumstats)](https://hub.docker.com/r/evolbioinfo/treesumstats/tags)
 
-## Preprint
+## Article
 
 Ruopeng Xie, Olivier Gascuel, Anna Zhukova (2026) __Simpler is not always better: Phylodynamic misspecification and deep-learning corrections__
-(Supplementary material) [_medRxiv_ 2026.05.07.26352661](https://www.medrxiv.org/content/medrxiv/early/2026/07/15/2026.05.07.26352661/DC1/embed/media-1.pdf?download=true)
+(Supplementary material) [_MBE_ 43(11):msag268](https://academic.oup.com/mbe/advance-article/doi/10.1093/molbev/msag268/9013718?searchresult=1#supplementary-data)
+
 
 ## Implemented summary statistics
 

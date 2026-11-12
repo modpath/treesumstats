@@ -155,24 +155,30 @@ class TopologyTest(unittest.TestCase):
         random_A, random_F = get_reshuffled_configs([real_A, real_F], all_tips)
 
         counts = Counter([_.name for _ in random_A])
-        self.assertEqual(1, counts['A1'] + counts['A2'] + counts['A3'], f'Random config {"-".join(_.name for _ in random_A)} does not include a tip from the original config {"-".join(_.name for _ in real_A)}')
-        self.assertEqual(3, len({_.name for _ in random_A}), f'Some tips are not different in a random config {"-".join(_.name for _ in random_A)}')
-        self.assertEqual(0, len({_.name for _ in random_A} - {'A1', 'A2', 'A3'} - {'X', 'G', 'N', 'O', 'M1', 'M2'}), f'Some tips are not different in a random config {"-".join(_.name for _ in random_A)}')
+        random_A_name_str = "-".join(_.name for _ in random_A)
+        real_A_name_str = "-".join(_.name for _ in real_A)
+        self.assertEqual(1, counts['A1'] + counts['A2'] + counts['A3'], f'Random config {random_A_name_str} does not include a tip from the original config {real_A_name_str}')
+        self.assertEqual(3, len({_.name for _ in random_A}), f'Some tips are not different in a random config {random_A_name_str}')
+        self.assertEqual(0, len({_.name for _ in random_A} - {'A1', 'A2', 'A3'} - {'X', 'G', 'N', 'O', 'M1', 'M2'}), f'Some tips are not different in a random config {random_A_name_str}')
 
         counts = Counter([_.name for _ in random_F])
-        self.assertEqual(1, counts['F1'] + counts['F2'] + counts['F3'], f'Random config {"-".join(_.name for _ in random_F)} does not include a tip from the original config {"-".join(_.name for _ in real_F)}')
-        self.assertEqual(3, len({_.name for _ in random_F}), f'Some tips are not different in a random config {"-".join(_.name for _ in random_F)}')
-        self.assertEqual(0, len({_.name for _ in random_F} - {'F1', 'F2', 'F3'} - {'C', 'E1', 'E2', 'E3', 'E4'}), f'Some tips are not different in a random config {"-".join(_.name for _ in random_F)}')
+        random_F_name_str = "-".join(_.name for _ in random_F)
+        real_F_name_str = "-".join(_.name for _ in real_F)
+        self.assertEqual(1, counts['F1'] + counts['F2'] + counts['F3'], f'Random config {random_F_name_str} does not include a tip from the original config {real_F_name_str}')
+        self.assertEqual(3, len({_.name for _ in random_F}), f'Some tips are not different in a random config {random_F_name_str}')
+        self.assertEqual(0, len({_.name for _ in random_F} - {'F1', 'F2', 'F3'} - {'C', 'E1', 'E2', 'E3', 'E4'}), f'Some tips are not different in a random config {random_F_name_str}')
 
         for c_type in (TRIPLET_LADDER, QUARTET_UNRESOLVED, QUARTET_TRIPLET_UNRESOLVED_TIP, QUARTET_CHERRY_TIP_TIP, QUARTET_LADDER):
             for real_conf, random_conf in zip(conf2tips[c_type],
                                               get_reshuffled_configs(conf2tips[c_type], all_tips)):
 
                 counts = Counter([_.name for _ in random_conf])
+                random_conf_name_str = "-".join(_.name for _ in random_conf)
+                real_conf_name_str = "-".join(_.name for _ in real_conf)
                 self.assertEqual(1, sum(counts[_.name] for _ in real_conf),
-                                 f'Random config {"-".join(_.name for _ in random_conf)} does not include a tip from the original config {"-".join(_.name for _ in real_conf)}')
+                                 f'Random config {random_conf_name_str} does not include a tip from the original config {real_conf_name_str}')
                 self.assertEqual(TOPOLOGY_LABEL2N[KEY2TOPOLOGY_LABEL[c_type]], len({_.name for _ in random_conf}),
-                                 f'Some tips are not different in a random config {"-".join(_.name for _ in random_conf)}')
+                                 f'Some tips are not different in a random config {random_conf_name_str}')
 
 
 
@@ -187,10 +193,12 @@ class TopologyTest(unittest.TestCase):
         for real_conf, random_conf in zip(inode_lists, get_reshuffled_configs(inode_lists, all_inodes)):
 
             counts = Counter([_.name for _ in random_conf])
+            random_conf_name_str = "-".join(_.name for _ in random_conf)
+            real_conf_name_str = "-".join(_.name for _ in real_conf)
             self.assertEqual(1, sum(counts[_.name] for _ in real_conf),
-                             f'Random config {"-".join(_.name for _ in random_conf)} does not include an inode from the original config {'-'.join(_.name for _ in real_conf)}')
+                             f'Random config {random_conf_name_str} does not include an inode from the original config {real_conf_name_str}')
             self.assertEqual(len(real_conf), len({_.name for _ in random_conf}),
-                             f'Some inodes are not different in a random config {"-".join(_.name for _ in random_conf)}')
+                             f'Some inodes are not different in a random config {random_conf_name_str}')
 
 
     def test_cherry_stats(self):
