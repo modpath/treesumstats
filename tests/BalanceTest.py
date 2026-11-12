@@ -12,7 +12,7 @@ NWK_CONF = '(((A1:1, A2:1, A3:1)A:1, (B:1, (C:1, (D1:1, D2:1)D:1)CD:1)BD:1)AD:1,
 
 NWK = '((A:0.2, B:0.3, A1:0.4)AB:1, (C:0.8, (D:1.2, (E:1.4, F:0.1)EF:1.7)DF:1.5)CF:0.3)root:0.1;'
 
-FeatureRegistry.register(BalanceFeatureCalculator)
+FeatureRegistry.register(BalanceFeatureCalculator())
 
 
 class BalanceTest(unittest.TestCase):
