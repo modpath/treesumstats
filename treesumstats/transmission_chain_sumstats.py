@@ -22,9 +22,10 @@ class TransmissionChainFeatureCalculator(FeatureCalculator):
         self._forest = None
 
     def feature_names(self):
-        return [f'n_{self._chain_len}-{CHAIN}', f'n_{self._chain_len}-{CHAIN}_{NORMALIZED}'] \
-            + [f'brlen_sum_{self._chain_len}-{CHAIN}_{flavour}' for flavour in BASIC_ARRAY_METRICS]\
-            + [f'brlen_sum_{self._chain_len}-{CHAIN}_perc{p}' for p in self._percentiles]
+        chain_len = self._chain_len
+        return [f'n_{chain_len}-{CHAIN}', f'n_{chain_len}-{CHAIN}_{NORMALIZED}'] \
+            + [f'brlen_sum_{chain_len}-{CHAIN}_{flavour}' for flavour in BASIC_ARRAY_METRICS]\
+            + [f'brlen_sum_{chain_len}-{CHAIN}_perc{p}' for p in self._percentiles]
 
     def set_forest(self, forest, **kwargs):
         self._forest = forest
@@ -64,10 +65,11 @@ class TransmissionChainFeatureCalculator(FeatureCalculator):
         return self._n_inodes
 
     def calculate(self, feature_name, **kwargs):
-        if feature_name.startswith(f'n_{self._chain_len}-{CHAIN}'):
+        chain_len = self._chain_len
+        if feature_name.startswith(f'n_{chain_len}-{CHAIN}'):
             denominator = self.n_inodes if feature_name.endswith(NORMALIZED) else 1
             return len(self.chains) / denominator
-        if feature_name.startswith(f'brlen_sum_{self._chain_len}-{CHAIN}'):
+        if feature_name.startswith(f'brlen_sum_{chain_len}-{CHAIN}'):
             if 0 == len(self.chains):
                 return 0
             flavour = feature_name.split('_')[-1]
@@ -79,17 +81,19 @@ class TransmissionChainFeatureCalculator(FeatureCalculator):
         return None
 
     def help(self, feature_name, *args, **kwargs):
-        if feature_name.startswith(f'n_{self._chain_len}-{CHAIN}'):
-            return f'number of {self._chain_len}-node transmission chains' +\
+        chain_len = self._chain_len
+        if feature_name.startswith(f'n_{chain_len}-{CHAIN}'):
+            return f'number of {chain_len}-node transmission chains' +\
                    (', divided by the number of internal nodes. ' if NORMALIZED in feature_name else '. ') +\
-                   f'(A {self._chain_len}-node transmission chain of node i is the shortest {self._chain_len}-branch path descending from i [Voznica et al. 2022].)'
-        if feature_name.startswith(f'brlen_sum_{self._chain_len}-{CHAIN}'):
+                   f'(A {chain_len}-node transmission chain of node i is the shortest {chain_len}-branch path descending from i [Voznica et al. 2022].)'
+        if feature_name.startswith(f'brlen_sum_{chain_len}-{CHAIN}'):
             flavour = feature_name.split('_')[-1]
             if flavour in BASIC_METRIC2FUN:
-                return f'{BASIC_METRIC2HELP[flavour]} of branch length sums of all {self._chain_len}-node transmission chains. ' \
-                   f'(A {self._chain_len}-node transmission chain of node i is the shortest {self._chain_len}-branch path descending from i [Voznica et al. 2022].)'
+                descr = BASIC_METRIC2HELP[flavour]
+                return f'{descr} of branch length sums of all {chain_len}-node transmission chains. ' \
+                   f'(A {chain_len}-node transmission chain of node i is the shortest {chain_len}-branch path descending from i [Voznica et al. 2022].)'
             elif 'perc' in flavour:
                 perc = re.findall(r'\d+', flavour)[0]
-                return f'{perc}th percentile of branch length sums of all {self._chain_len}-node transmission chains. ' \
-                       f'(A {self._chain_len}-node transmission chain of node i is the shortest {self._chain_len}-branch path descending from i [Voznica et al. 2022].)'
+                return f'{perc}th percentile of branch length sums of all {chain_len}-node transmission chains. ' \
+                       f'(A {chain_len}-node transmission chain of node i is the shortest {chain_len}-branch path descending from i [Voznica et al. 2022].)'
         return None

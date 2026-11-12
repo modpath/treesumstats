@@ -291,9 +291,10 @@ class LTTFeatureCalculator(FeatureCalculator):
     def help(self, feature_name, *args, **kwargs):
         if feature_name.startswith('ltt'):
             coordinate = int(re.findall(r'\d+', feature_name)[0])
-            explanation = f", where times t_i (0 ≤ i ≤ {self._n_coordinates}) are equally distributed between " \
+            n_coords = self._n_coordinates
+            explanation = f", where times t_i (0 ≤ i ≤ {n_coords}) are equally distributed between " \
                           "the time of the start of the first tree (t_0 = 0) in the forest and " + \
-                          f"the time of the forest’s last sampled tip (t_{self._n_coordinates}=T)."
+                          f"the time of the forest’s last sampled tip (t_{n_coords}=T)."
             if 'time' in feature_name:
                 # Invert the time so that the end of the sampling period is at time 0
                 return f"T - t_{coordinate}{explanation}"

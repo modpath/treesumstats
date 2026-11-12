@@ -81,8 +81,8 @@ class ResolutionFeatureCalculator(FeatureCalculator):
 
     def help(self, feature_name, *args, **kwargs):
         if feature_name.startswith(N_CHILDREN_PREFIX):
-            return (f'{BASIC_METRIC2HELP[feature_name[len(N_CHILDREN_PREFIX) + 1:]]} '
-                    'of the number of children per internal node of forest trees.')
+            descr = BASIC_METRIC2HELP[feature_name[len(N_CHILDREN_PREFIX) + 1:]]
+            return f'{descr} of the number of children per internal node of forest trees.'
         if N_RESOLVED == feature_name:
             return 'number of resolved (i.e., with exactly 2 children) nodes in the forest.'
         if N_RESOLVED_NON_ZERO == feature_name:

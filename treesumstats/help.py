@@ -27,11 +27,16 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Prints available summary statistics and their descriptions.")
+    parser.add_argument('--add_descriptions', action='store_true',
+                        help='whether to add the description of each statistic.')
     params = parser.parse_args()
 
     for feature_name in FeatureManager.available_features():
-        # print(f'1. **{feature_name}:** {FeatureManager.help(feature_name)}')
-        print(feature_name)
+        if params.add_descriptions:
+            descr = FeatureManager.help(feature_name)
+            print(f'{feature_name}: {descr}')
+        else:
+            print(feature_name)
 
 
 if '__main__' == __name__:

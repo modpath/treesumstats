@@ -159,5 +159,5 @@ class BranchFeatureCalculator(FeatureCalculator):
         if feature_name.startswith('frac'):
             feature_name_1, feature_name_2 = feature_name[len('frac_'):].split('_by_')
             return 'fraction of two values. The dividend is ' + self.help(feature_name_1).split('.')[0] +\
-                   f'. The divisor is {self.help(feature_name_2)}'
+                   '. The divisor is ' + self.help(feature_name_2) + '.'
         return None

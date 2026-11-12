@@ -56,7 +56,8 @@ def main():
         description = "\tdescription" if params.add_descriptions else ""
         f.write(f'statistic\tvalue{description}\n')
         for feature_name, value in zip(features, FeatureManager.compute_features(forest, *features)):
-            f.write(f'{feature_name}\t{format_value(value)}{f"\t{FeatureManager.help(feature_name)}" if params.add_descriptions else ""}\n')
+            description = ("\t" + FeatureManager.help(feature_name)) if params.add_descriptions else ""
+            f.write(f'{feature_name}\t{format_value(value)}{description}\n')
 
 
 if '__main__' == __name__:

@@ -186,7 +186,8 @@ class SubtreeFeatureCalculator(FeatureCalculator):
             measure = 'fraction' if feature_name.startswith('frac') else 'number'
             if 'O' == conf:
                 return f'{measure} of forest tips that are not part of any subtree of size 2, 3 or 4.'
-            return f'{measure} of forest tips that are found in {TOPOLOGY_LABEL2NAME[conf]}.'
+            descr = TOPOLOGY_LABEL2NAME[conf]
+            return f'{measure} of forest tips that are found in {descr}.'
 
         if 'inodes_with_sibling_inodes' in feature_name:
             measure = 'fraction' if feature_name.startswith('frac') else 'number'
@@ -207,32 +208,33 @@ class SubtreeFeatureCalculator(FeatureCalculator):
                                '(unless there were not enough such nodes, e.g., 8 tips in total and only 2 4-tip subtrees in the forest).'
 
             flavour = feature_name.split('_')[-1]
+            topology_name = TOPOLOGY_LABEL2NAME[conf]
             if flavour in BASIC_METRIC2FUN or 'perc' in flavour:
                 if flavour in BASIC_METRIC2FUN:
-                    res = {BASIC_METRIC2HELP[flavour]}
+                    res = BASIC_METRIC2HELP[flavour]
                 else:
                     perc = re.findall(r"\d+", flavour)[0]
                     res = f'{perc}th percentile'
-                res += f' of average of all external node pair sampling time differences in a {TOPOLOGY_LABEL2NAME[conf]} among all ' + \
+                res += f' of average of all external node pair sampling time differences in a {topology_name} among all ' + \
                        ('' if is_real else 'reshuffled') + \
-                       f'{TOPOLOGY_LABEL2NAME[conf]} in the forest.'
+                       f'{topology_name} in the forest.'
                 if not is_real:
                     res += reshuffling_expl
                 return res
             else:
                 if 'random_vs_real_n_' in feature_name:
                     less_or_more = 'smaller' if 'less' == feature_name.split('_')[-1] else 'larger'
-                    return f'number of {TOPOLOGY_LABEL2NAME[conf]}, ' \
+                    return f'number of {topology_name}, ' \
                            f'for which their average external node sampling time difference is {less_or_more} in real subtrees than ' \
                            f'in the corresponding reshuffled ones. {reshuffling_expl}'
                 elif 'random_vs_real_frac_' in feature_name:
                     less_or_more = 'smaller' if 'less' == feature_name.split('_')[-1] else 'larger'
-                    return f'fraction of {TOPOLOGY_LABEL2NAME[conf]}, ' \
+                    return f'fraction of {topology_name}, ' \
                            f'for which their average external node sampling time difference is {less_or_more} in real subtrees than ' \
                            f'in the corresponding reshuffled ones. {reshuffling_expl}'
                 elif 'random_vs_real_pval_' in feature_name:
                     less_or_more = 'smaller' if 'less' == feature_name.split('_')[-1] else 'larger'
-                    return f'p-value of the sign test checking that for {TOPOLOGY_LABEL2NAME[conf]}, ' +\
+                    return f'p-value of the sign test checking that for {topology_name}, ' +\
                            'their average external node sampling time differences are indistinguishable in real subtrees and ' \
                            'in the corresponding reshuffled ones ' +\
                            f'(the alternative hypothesis is that some real ones are {less_or_more}). {reshuffling_expl}'
