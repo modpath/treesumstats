@@ -10,6 +10,11 @@ Representing phylogenetic trees (or forests of such trees) as summary statistics
 [![PyPI downloads](https://shields.io/pypi/dm/treesumstats)](https://pypi.org/project/treesumstats/)
 [![Docker pulls](https://img.shields.io/docker/pulls/evolbioinfo/treesumstats)](https://hub.docker.com/r/evolbioinfo/treesumstats/tags)
 
+## Preprint
+
+Ruopeng Xie, Olivier Gascuel, Anna Zhukova (2026) __Simpler is not always better: Phylodynamic misspecification and deep-learning corrections__
+(Supplementary material) [_medRxiv_ 2026.05.07.26352661](https://www.medrxiv.org/content/medrxiv/early/2026/07/15/2026.05.07.26352661/DC1/embed/media-1.pdf?download=true)
+
 ## Implemented summary statistics
 
 ### Basic Tree statistics 
